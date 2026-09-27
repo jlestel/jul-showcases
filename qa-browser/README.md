@@ -132,6 +132,35 @@ ASSERT   a "Check that ..." step, and every acceptance criterion, is a Choice/No
 That's the whole split: the harness does the mechanical work, JuL makes every choice. No CSS
 selector, no URL rule, no hand-written list of labels — nothing tied to a particular site.
 
+## Signed-in flows
+
+Some journeys only exist behind a login — and re-typing a password through the UI on every run is
+the single flakiest thing in a test suite (captchas, 2FA, bot checks). So you sign in **once**, by
+hand, in a browser JuL drives, and every run after that inherits the session:
+
+```bash
+google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.qa-agent"
+# sign in once in that window, then:
+python qa-browser/run.py qa-browser/tickets/vistaprint-checkout-auth-en.md --cdp http://localhost:9222
+```
+
+That ticket takes a full cart into checkout and asserts it reaches the shipping and payment steps —
+which only happens when you're signed in; a guest hits a "create an account" wall instead. It stops
+there: nothing is ever paid.
+
+```console
+✓  1. Check that the "My Cart" page is displayed        (JuL 1.00)
+→  2. Click "Checkout"                                  [jul 1.00]
+✓  3. Check that the "Shipping" address step is shown   (JuL 1.00)
+
+Page reached: Checkout | VistaPrint  (https://www.vistaprint.com/co/)
+  ✓ The "Checkout" page is displayed        (JuL 1.00)
+  ✓ The "Shipping" address step is shown    (JuL 1.00)
+  ✓ The "Payment" step is shown             (JuL 0.94)
+
+PASS — 3 steps, 3 criteria, 23 s
+```
+
 ## Replay for $0
 
 Every run writes a trace (`qa-browser/runs/<ticket>.json`) with the element JuL chose for each step
