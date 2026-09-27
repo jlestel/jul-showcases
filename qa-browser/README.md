@@ -195,8 +195,9 @@ in the ticket.
 
 The suite returns a non-zero exit code if anything is red, so it drops straight into CI or cron —
 run a fast gate on every push and the full regression every night, and you find out the checkout
-broke before your customers do. There's a ready workflow in
-[`.github/workflows/qa.yml`](../.github/workflows/qa.yml):
+broke before your customers do. There's an example workflow in
+[`ci.example.yml`](ci.example.yml) — copy it to `.github/workflows/qa.yml` in your app's repo to
+switch it on:
 
 ```yaml
 on:

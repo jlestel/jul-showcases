@@ -1,3 +1,6 @@
+# EXAMPLE workflow — not active in this repo. Copy it to .github/workflows/qa.yml in
+# your own app's repo to switch it on (GitHub only runs workflows from .github/workflows/).
+#
 # Run the qa-browser suite automatically — a fast smoke gate on every push, the full
 # regression every night. The suite exits non-zero if any ticket fails, so a red run
 # fails the check. Every run is $0 (JuL is local, no tokens are generated).
