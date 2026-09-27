@@ -1,12 +1,13 @@
 # Ticket QA-VP-03 — Signed-in checkout reaches the payment step
 
-Site : https://www.vistaprint.com/c/
+Site : https://www.vistaprint.com/marketing-materials/flyers
+Tags : checkout, auth
+Setup : add-flyer-to-cart
 
 ## Steps
 
-1. Check that the "My Cart" page is displayed.
-2. Click "Checkout".
-3. Check that the "Shipping" address step is shown.
+1. Click "Checkout".
+2. Check that the "Shipping" address step is shown.
 
 ## Acceptance criteria
 

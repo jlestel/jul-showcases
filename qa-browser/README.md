@@ -161,6 +161,33 @@ Page reached: Checkout | VistaPrint  (https://www.vistaprint.com/co/)
 PASS — 3 steps, 3 criteria, 23 s
 ```
 
+## Suites, tags & shared setup
+
+Run many tickets at once, filter by tag, get one exit code — a regression suite:
+
+```console
+$ python qa-browser/suite.py qa-browser/tickets/*.md --tag checkout --cdp http://localhost:9250
+
+━━━ [1/1] QA-VP-03 — Signed-in checkout reaches the payment step  [checkout, auth] ━━━
+  … 13 steps, 3 criteria, PASS …
+================================================================
+  ✓ QA-VP-03 — Signed-in checkout reaches the payment step   (98 s)
+
+1/1 green — 0 tokens generated, $0.00
+```
+
+Two optional header lines make this work:
+
+- **`Tags : smoke, checkout, auth`** — pick what runs: `--tag smoke` for a fast gate on every
+  commit, `--exclude auth` to skip the signed-in ones, full suite at night.
+- **`Setup : add-flyer-to-cart`** — pull in a shared step block from `fragments/`, so the "get a
+  flyer into the cart" preamble lives in one file. Each ticket runs it *itself*, so the tests stay
+  **independent**: none inherits another's cart, and any ticket runs alone, in any order. That's the
+  DRY way to share setup without the fragility of tests that hand state to each other.
+
+Keep only the stable *arrange* steps in a fragment; keep the thing you're actually testing visible
+in the ticket.
+
 ## Replay for $0
 
 Every run writes a trace (`qa-browser/runs/<ticket>.json`) with the element JuL chose for each step
