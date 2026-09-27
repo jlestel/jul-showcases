@@ -393,7 +393,10 @@ def run(ticket: Ticket, args) -> int:
         elapsed = time.perf_counter() - t0
         if args.shot:
             tab.screenshot(path=args.shot)
-        browser.close()
+        if args.cdp:
+            tab.close()                     # a browser we only connected to stays open (and signed in)
+        else:
+            browser.close()                 # a browser we launched is ours to close
 
     passed = not failed and bool(results) and all(r["ok"] for r in results)
     med = statistics.median(brain.ms) if brain.ms else 0

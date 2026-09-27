@@ -163,17 +163,20 @@ PASS — 3 steps, 3 criteria, 23 s
 
 ## Suites, tags & shared setup
 
-Run many tickets at once, filter by tag, get one exit code — a regression suite:
+Run the tests you need — filter by tag — get one aggregate report and a CI-ready exit code:
 
 ```console
-$ python qa-browser/suite.py qa-browser/tickets/*.md --tag checkout --cdp http://localhost:9250
+$ python qa-browser/suite.py qa-browser/tickets/*.md --tag auth --cdp http://localhost:9250
 
-━━━ [1/1] QA-VP-03 — Signed-in checkout reaches the payment step  [checkout, auth] ━━━
-  … 13 steps, 3 criteria, PASS …
+━━━ [1/2] QA-VP-04 — The header shows a signed-in account  [account, auth] ━━━
+  … 1 step, 2 criteria, PASS, 6 s …
+━━━ [2/2] QA-VP-03 — Signed-in checkout reaches the payment step  [checkout, auth] ━━━
+  … 13 steps, 3 criteria, PASS, 90 s …
 ================================================================
-  ✓ QA-VP-03 — Signed-in checkout reaches the payment step   (98 s)
+  ✓ QA-VP-04 — The header shows a signed-in account                (6 s)
+  ✓ QA-VP-03 — Signed-in checkout reaches the payment step         (90 s)
 
-1/1 green — 0 tokens generated, $0.00
+2/2 green — 0 tokens generated, $0.00
 ```
 
 Two optional header lines make this work:
@@ -187,6 +190,29 @@ Two optional header lines make this work:
 
 Keep only the stable *arrange* steps in a fragment; keep the thing you're actually testing visible
 in the ticket.
+
+## Run it regularly
+
+The suite returns a non-zero exit code if anything is red, so it drops straight into CI or cron —
+run a fast gate on every push and the full regression every night, and you find out the checkout
+broke before your customers do. There's a ready workflow in
+[`.github/workflows/qa.yml`](../.github/workflows/qa.yml):
+
+```yaml
+on:
+  push:                       # fast smoke gate on every commit
+  schedule:
+    - cron: "0 6 * * *"       # full regression every night
+```
+
+```console
+# on push:   python qa-browser/suite.py qa-browser/tickets/*.md --tag smoke
+# nightly:   python qa-browser/suite.py qa-browser/tickets/*.md --exclude auth
+```
+
+Because a run costs $0, "run it regularly" can mean *really* regularly — every commit, every hour —
+without a bill that grows with your suite. (It needs a runner with the local model and a browser;
+signed-in tickets run against a session you seed once.)
 
 ## Replay for $0
 

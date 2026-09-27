@@ -1,0 +1,32 @@
+# Run the qa-browser suite automatically — a fast smoke gate on every push, the full
+# regression every night. The suite exits non-zero if any ticket fails, so a red run
+# fails the check. Every run is $0 (JuL is local, no tokens are generated).
+#
+# Runs on a self-hosted runner because the checks drive a real browser with a local
+# model (jul[mlx] + playwright chromium). Signed-in tickets (Tags: auth) are left out
+# of CI here — they run locally against a browser you've signed into once; to run them
+# in CI, seed a saved storageState as a secret.
+name: qa-browser
+
+on:
+  push:
+    branches: [qa-browser, main]
+  schedule:
+    - cron: "0 6 * * *"        # 06:00 UTC every day — nightly regression
+
+jobs:
+  smoke:
+    if: github.event_name == 'push'
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - name: Smoke suite (fast gate)
+        run: python qa-browser/suite.py qa-browser/tickets/*.md --tag smoke
+
+  regression:
+    if: github.event_name == 'schedule'
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - name: Full regression (guest tickets)
+        run: python qa-browser/suite.py qa-browser/tickets/*.md --exclude auth
