@@ -1,6 +1,7 @@
 # Ticket QA-VP-02 — Personalize a flyer and add it to the cart
 
 Site : https://www.vistaprint.com/marketing-materials/flyers
+Tags : smoke, cart, guest
 
 ## Steps
 

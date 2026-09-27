@@ -132,6 +132,89 @@ ASSERT   a "Check that ..." step, and every acceptance criterion, is a Choice/No
 That's the whole split: the harness does the mechanical work, JuL makes every choice. No CSS
 selector, no URL rule, no hand-written list of labels — nothing tied to a particular site.
 
+## Signed-in flows
+
+Some journeys only exist behind a login — and re-typing a password through the UI on every run is
+the single flakiest thing in a test suite (captchas, 2FA, bot checks). So you sign in **once**, by
+hand, in a browser JuL drives, and every run after that inherits the session:
+
+```bash
+google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.qa-agent"
+# sign in once in that window, then:
+python qa-browser/run.py qa-browser/tickets/vistaprint-checkout-auth-en.md --cdp http://localhost:9222
+```
+
+That ticket takes a full cart into checkout and asserts it reaches the shipping and payment steps —
+which only happens when you're signed in; a guest hits a "create an account" wall instead. It stops
+there: nothing is ever paid.
+
+```console
+✓  1. Check that the "My Cart" page is displayed        (JuL 1.00)
+→  2. Click "Checkout"                                  [jul 1.00]
+✓  3. Check that the "Shipping" address step is shown   (JuL 1.00)
+
+Page reached: Checkout | VistaPrint  (https://www.vistaprint.com/co/)
+  ✓ The "Checkout" page is displayed        (JuL 1.00)
+  ✓ The "Shipping" address step is shown    (JuL 1.00)
+  ✓ The "Payment" step is shown             (JuL 0.94)
+
+PASS — 3 steps, 3 criteria, 23 s
+```
+
+## Suites, tags & shared setup
+
+Run the tests you need — filter by tag — get one aggregate report and a CI-ready exit code:
+
+```console
+$ python qa-browser/suite.py qa-browser/tickets/*.md --tag auth --cdp http://localhost:9250
+
+━━━ [1/2] QA-VP-04 — The header shows a signed-in account  [account, auth] ━━━
+  … 1 step, 2 criteria, PASS, 6 s …
+━━━ [2/2] QA-VP-03 — Signed-in checkout reaches the payment step  [checkout, auth] ━━━
+  … 13 steps, 3 criteria, PASS, 90 s …
+================================================================
+  ✓ QA-VP-04 — The header shows a signed-in account                (6 s)
+  ✓ QA-VP-03 — Signed-in checkout reaches the payment step         (90 s)
+
+2/2 green — 0 tokens generated, $0.00
+```
+
+Two optional header lines make this work:
+
+- **`Tags : smoke, checkout, auth`** — pick what runs: `--tag smoke` for a fast gate on every
+  commit, `--exclude auth` to skip the signed-in ones, full suite at night.
+- **`Setup : add-flyer-to-cart`** — pull in a shared step block from `fragments/`, so the "get a
+  flyer into the cart" preamble lives in one file. Each ticket runs it *itself*, so the tests stay
+  **independent**: none inherits another's cart, and any ticket runs alone, in any order. That's the
+  DRY way to share setup without the fragility of tests that hand state to each other.
+
+Keep only the stable *arrange* steps in a fragment; keep the thing you're actually testing visible
+in the ticket.
+
+## Run it regularly
+
+The suite returns a non-zero exit code if anything is red, so it drops straight into CI or cron —
+run a fast gate on every push and the full regression every night, and you find out the checkout
+broke before your customers do. There's an example workflow in
+[`ci.example.yml`](ci.example.yml) — copy it to `.github/workflows/qa.yml` in your app's repo to
+switch it on:
+
+```yaml
+on:
+  push:                       # fast smoke gate on every commit
+  schedule:
+    - cron: "0 6 * * *"       # full regression every night
+```
+
+```console
+# on push:   python qa-browser/suite.py qa-browser/tickets/*.md --tag smoke
+# nightly:   python qa-browser/suite.py qa-browser/tickets/*.md --exclude auth
+```
+
+Because a run costs $0, "run it regularly" can mean *really* regularly — every commit, every hour —
+without a bill that grows with your suite. (It needs a runner with the local model and a browser;
+signed-in tickets run against a session you seed once.)
+
 ## Replay for $0
 
 Every run writes a trace (`qa-browser/runs/<ticket>.json`) with the element JuL chose for each step
