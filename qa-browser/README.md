@@ -67,7 +67,7 @@ first check that fails. When a checkout funnel breaks, that tells you *where* it
 
 ▶️ **[Watch the screencast (`demo.mp4`)](demo.mp4)** — this exact run on barnesandnoble.com, recorded
 with `python qa-browser/record_run.py` on a 2021 MacBook M1 Pro (MLX, `wemm-4b-4bit`). The whole
-search-to-cart run takes about 30 seconds, and every rerun is free.
+search-to-cart run takes 30 to 40 seconds, and every rerun is free.
 
 ## Writing a ticket
 
@@ -211,4 +211,4 @@ google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.qa-agent"
 python qa-browser/run.py my-ticket.md --cdp http://localhost:9222
 ```
 
-The demo flow stops at the cart — nothing is ever ordered.
+The demo tickets stop at the checkout page — nothing is ever ordered.

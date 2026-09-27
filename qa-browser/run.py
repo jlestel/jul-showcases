@@ -1,9 +1,9 @@
 """qa-browser — run a PO's acceptance test in a real browser, with JuL as the only brain.
 
-    python qa-browser/run.py qa-browser/tickets/truffaut-arrosoir.md
-    python qa-browser/run.py qa-browser/tickets/truffaut-arrosoir.md --replay   # reuse the last trace
+    python qa-browser/run.py qa-browser/tickets/barnesandnoble-cart-en.md
+    python qa-browser/run.py qa-browser/tickets/barnesandnoble-cart-en.md --replay   # reuse the last trace
 
-The PO writes the ticket in plain French (see README.md). For each step the harness reads the
+The PO writes the ticket in plain English or French (see README.md). For each step the harness reads the
 page's accessibility tree and JuL decides, in one `system_one` call, the operation (click or
 type) and the target element. Optional steps ("Si ...") get a `Noul`: does this element really
 do the step here? Each acceptance criterion is a `Noul` on what the final page shows.
