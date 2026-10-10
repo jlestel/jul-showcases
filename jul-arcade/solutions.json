@@ -1,0 +1,165 @@
+{
+ "_about": "Reference machines used to check that each level is winnable (and that a lazy one is not). Run: python check_levels.py",
+ "guichet": {
+  "lazy": {
+   "type": "choice",
+   "instructions": "",
+   "options": [
+    {
+     "key": "facturation",
+     "description": "",
+     "to": "facturation"
+    },
+    {
+     "key": "technique",
+     "description": "",
+     "to": "technique"
+    },
+    {
+     "key": "compte",
+     "description": "",
+     "to": "compte"
+    }
+   ]
+  },
+  "good": {
+   "type": "choice",
+   "instructions": "Quelle équipe doit traiter ce message ?",
+   "options": [
+    {
+     "key": "facturation",
+     "description": "paiement, facture, prélèvement, prix, remboursement",
+     "to": "facturation"
+    },
+    {
+     "key": "technique",
+     "description": "bug, erreur, l'application ou le site ne marche pas",
+     "to": "technique"
+    },
+    {
+     "key": "compte",
+     "description": "connexion, mot de passe, e-mail, profil, utilisateurs du compte",
+     "to": "compte"
+    }
+   ]
+  }
+ },
+ "tempete": {
+  "lazy": {
+   "type": "choice",
+   "instructions": "",
+   "options": [
+    {
+     "key": "responsable",
+     "description": "",
+     "to": "responsable"
+    },
+    {
+     "key": "facturation",
+     "description": "",
+     "to": "facturation"
+    },
+    {
+     "key": "technique",
+     "description": "",
+     "to": "technique"
+    },
+    {
+     "key": "compte",
+     "description": "",
+     "to": "compte"
+    }
+   ]
+  },
+  "good": {
+   "type": "noul",
+   "instructions": "Le client est-il en colère ?",
+   "threshold": 0.95,
+   "yes": "responsable",
+   "no": {
+    "type": "choice",
+    "instructions": "Quelle équipe doit traiter ce message ?",
+    "options": [
+     {
+      "key": "facturation",
+      "description": "paiement, facture, prélèvement, prix, remboursement",
+      "to": "facturation"
+     },
+     {
+      "key": "technique",
+      "description": "bug, erreur, l'application ou le site ne marche pas",
+      "to": "technique"
+     },
+     {
+      "key": "compte",
+      "description": "connexion, mot de passe, e-mail, profil, utilisateurs du compte",
+      "to": "compte"
+     }
+    ]
+   }
+  },
+  "naive": {
+   "type": "noul",
+   "instructions": "Le client est-il en colère ?",
+   "threshold": 0.5,
+   "yes": "responsable",
+   "no": {
+    "type": "choice",
+    "instructions": "Quelle équipe doit traiter ce message ?",
+    "options": [
+     {
+      "key": "facturation",
+      "description": "paiement, facture, prélèvement, prix, remboursement",
+      "to": "facturation"
+     },
+     {
+      "key": "technique",
+      "description": "bug, erreur, l'application ou le site ne marche pas",
+      "to": "technique"
+     },
+     {
+      "key": "compte",
+      "description": "connexion, mot de passe, e-mail, profil, utilisateurs du compte",
+      "to": "compte"
+     }
+    ]
+   }
+  }
+ },
+ "avis": {
+  "lazy": {
+   "type": "noul",
+   "instructions": "Avis ?",
+   "yes": "fans",
+   "no": "sav"
+  },
+  "good": {
+   "type": "score",
+   "instructions": "À quel point le client est-il satisfait ?",
+   "levels": [
+    "très mécontent",
+    "mécontent",
+    "neutre",
+    "content",
+    "ravi"
+   ],
+   "threshold": 0.69,
+   "above": "fans",
+   "below": "sav"
+  },
+  "naive": {
+   "type": "score",
+   "instructions": "À quel point le client est-il satisfait ?",
+   "levels": [
+    "très mécontent",
+    "mécontent",
+    "neutre",
+    "content",
+    "ravi"
+   ],
+   "threshold": 0.5,
+   "above": "fans",
+   "below": "sav"
+  }
+ }
+}
