@@ -270,7 +270,7 @@
           "portal": "compte"
         }
       ],
-      "hint": "Mets une Porte oui/non AVANT le Trieur. Et méfie-toi du seuil : je trouve vite les gens « un peu énervés »."
+      "hint": "Mets une Porte oui/non AVANT le Trieur. Et méfie-toi du seuil : je trouve vite les gens « un peu énervés », monte-le pour ne garder que les vrais furieux."
     },
     {
       "id": "avis",
@@ -367,7 +367,7 @@
           "portal": "sav"
         }
       ],
-      "hint": "Une Jauge ne répond pas oui ou non : elle donne une position. Tout se joue sur l'endroit où tu poses le seuil."
+      "hint": "Une Jauge ne répond pas oui ou non : elle donne une position. Tout se joue sur l'endroit où tu coupes : c'est ton seuil qui décide au-dessus / en dessous."
     }
   ]
 }

@@ -7,7 +7,7 @@
 <style>
   @font-face { font-family: "Fredoka"; src: url(/vendor/fredoka-latin.woff2) format("woff2"); font-weight: 300 700; }
   :root {
-    --paper:#fffafd; --cream:#fff0f7; --ink:#4a2f6b; --muted:#9a7fb8; --coral:#ff5d8f; --teal:#2fd9a0;
+    --paper:#fffafd; --cream:#fff0f7; --ink:#4a2f6b; --muted:#71558f; --coral:#ff5d8f; --teal:#2fd9a0;
     --butter:#ffd84d; --plum:#a66bff; --rose:#ff8fc8; --sky:#3ec7ff; --line:3px solid var(--ink);
   }
   * { box-sizing:border-box; }
@@ -160,12 +160,12 @@
   <h3 id="endtitle"></h3>
   <div id="stars"><span>★</span><span>★</span><span>★</span></div>
   <div id="endstats"></div>
-  <div class="lbl">L'appel API que tu as construit (c'est du code de prod) :</div>
+  <div class="lbl">Ta décision en vrai code : l'appel à JuL, puis l'aiguillage avec tes seuils</div>
   <pre id="wire"></pre>
   <div class="btns"><button id="again">↺ Rejouer</button><button id="next">Niveau suivant →</button></div>
 </div></div>
 <div id="spot"></div>
-<div id="coach" class="sticker"></div>
+<div id="coach" class="sticker" role="dialog" aria-live="polite" aria-label="Tutoriel"></div>
 <div id="nogl" class="sticker">WebGL indisponible — <a href="/classic.html">version 2D</a></div>
 
 <script>
@@ -209,10 +209,10 @@ function nodeEl(node, setNode, depth) {
   const sub = el("div", { className: "sub" });
   const kid = (dest, set) => { if (typeof dest === "object") sub.append(nodeEl(dest, set, depth + 1)); };
   if (node.type === "choice") {
-    sub.append(el("div", { className: "lbl", textContent: "options : nom · critère · sortie" }));
+    sub.append(el("div", { className: "lbl", textContent: "options : nom (pour toi) · description (pour JuL) · sortie" }));
     node.options.forEach((o, i) => {
-      const k = input(o.key, "nom", v => o.key = v); k.className = "k";
-      const d = input(o.description, "décris ce qui va là", v => o.description = v); d.className = "d"; d.title = o.description || "";
+      const k = input(o.key, "nom (pour toi)", v => o.key = v); k.className = "k";
+      const d = input(o.description, "description : c'est ça que je lis", v => o.description = v); d.className = "d"; d.title = o.description || "";
       const r = el("div", { className: "row" }, k, d, destSelect(() => o.to, v => o.to = v));
       if (node.options.length > 2) { const x = el("button", { className: "mini", textContent: "−" }); x.onclick = () => { node.options.splice(i, 1); render(); }; r.append(x); }
       sub.append(r); kid(o.to, v => o.to = v);
@@ -229,9 +229,10 @@ function nodeEl(node, setNode, depth) {
     }
     const lab = el("span", { className: "thlab" });
     const rg = el("input", { type: "range", min: 0.05, max: 0.97, step: 0.01, value: node.threshold });
-    const upd = () => lab.textContent = `seuil ${(Number.isFinite(+node.threshold) ? +node.threshold : 0.5).toFixed(2)}`;
+    const upd = () => lab.textContent = `ton seuil ${(Number.isFinite(+node.threshold) ? +node.threshold : 0.5).toFixed(2)}`;
     rg.oninput = () => { node.threshold = +rg.value; upd(); changed(false); }; upd();
     sub.append(el("div", { className: "row" }, lab, rg));
+    sub.append(el("div", { className: "lbl", textContent: node.type === "noul" ? "JuL répond une probabilité 0-1 ; c'est toi qui coupes : oui si ≥ ton seuil" : "JuL répond une position sur ta jauge ; c'est toi qui coupes : au-dessus si ≥ ton seuil" }));
     const [a, b, la, lb] = node.type === "noul" ? ["yes", "no", "si oui →", "si non →"] : ["above", "below", "au-dessus →", "en dessous →"];
     for (const [key, txt] of [[a, la], [b, lb]]) {
       sub.append(el("div", { className: "row" }, el("span", { textContent: txt, style: "font-size:13px;flex:0 0 90px;font-weight:600" }), destSelect(() => node[key], v => node[key] = v)));
@@ -248,6 +249,16 @@ function wireOf(n) {
   if (n.type === "choice") return { type: "choice", instructions: n.instructions, criteria: Object.fromEntries(n.options.map(o => [o.key, o.description || null])) };
   if (n.type === "noul") return { type: "noul", instructions: n.instructions };
   return { type: "score", instructions: n.instructions, criteria: n.levels };
+}
+function routeCode(n, path = "q", ind = "", out = []) {   // the branching the engine applies, thresholds included
+  const dest = d => typeof d === "string" ? `→ ${LV.portals[d].label}` : null;
+  const sub = (d, p) => dest(d) ? null : routeCode(d, p, ind + "  ", out);
+  const line = (cond, d, p) => { out.push(`${ind}${cond} ${dest(d) || "{"}`); if (!dest(d)) { sub(d, p); out.push(ind + "}"); } };
+  if (typeof n !== "object") return out;
+  if (n.type === "choice") n.options.forEach((o, i) => line(`si ${path}.choice == "${o.key}"`, o.to, path + "_" + (i + 1)));
+  else if (n.type === "noul") { const t = (+n.threshold || 0.5).toFixed(2); line(`si ${path}.noul >= ${t}`, n.yes, path + "_1"); line(`sinon`, n.no, path + "_2"); }
+  else { const t = (+n.threshold || 0.5).toFixed(2); line(`si ${path}.score / ${n.levels.length - 1} >= ${t}`, n.above, path + "_1"); line(`sinon`, n.below, path + "_2"); }
+  return out;
 }
 function wireTree(n, out = {}, path = "q") {   // every block of the machine = one question
   if (typeof n !== "object") return out;
@@ -286,7 +297,8 @@ function endCard(res, snap) {
   $("#endtitle").textContent = ["Le robot est perdu…", "Peut mieux faire", "Bien joué !", "Parfait !"][res.stars];
   [...document.querySelectorAll("#stars span")].forEach((s, i) => { s.className = i < res.stars ? "on" : ""; s.style.animationDelay = (0.15 + i * 0.2) + "s"; });
   $("#endstats").innerHTML = `<div>${res.correct} / ${res.total} bien rangés</div><div>score ${res.score}</div><div>${res.calls} appels JuL</div><div>${res.ms_per_call} ms / décision</div><div>0 token · 0 $</div>`;
-  $("#wire").textContent = `POST /v1/systemone\n` + JSON.stringify({ state: "<le message du client>", questions: wireTree(snap) }, null, 2);
+  $("#wire").textContent = `// 1) ce qu'on envoie à JuL pour chaque message\nPOST /v1/systemone\n` + JSON.stringify({ state: "<le message du client>", questions: wireTree(snap) }, null, 2)
+    + `\n\n// 2) ce que ton code fait de la réponse\n` + routeCode(snap).join("\n");
   const idx = LEVELS.indexOf(LV); $("#next").style.display = idx < LEVELS.length - 1 ? "" : "none";
   $("#end").classList.add("on"); setTimeout(() => TUTO.event("ended"), 450);
   if ((BEST[LV.id] || 0) < res.stars) { BEST[LV.id] = res.stars; localStorage.setItem("jularcade.best", JSON.stringify(BEST)); levelButtons(); }
@@ -321,19 +333,20 @@ const TUTO = (() => {
   const SUGG = [["facturation", "paiement, facture, prélèvement, remboursement, prix"],
                 ["technique", "bug, erreur, l'appli plante, ne marche pas, page blanche"],
                 ["compte", "connexion, mot de passe, e-mail, profil, supprimer mon compte"]];
+  const descOk = i => opt(i) && (opt(i).description || "").trim().split(/[ ,]+/).filter(Boolean).length >= 2;
   const fillOpt = i => { const o = opt(i); o.key = SUGG[i][0]; o.description = SUGG[i][1]; render(); };
   const row = i => document.querySelectorAll("#builder .node.choice > .sub > .row")[i];
   const STEPS = [
     { t: "Salut, je suis Bip !", p: "Je trie les messages des clients de PixelPost. Mais je ne sais pas <b>où</b> les envoyer : c'est toi qui vas me construire une <b>décision</b>.", at: "#gl", place: "center" },
     { t: "Les portes", p: "Chaque message doit finir dans la bonne porte : <b>Facturation</b>, <b>Technique</b> ou <b>Compte</b>. Voici des exemples de messages et leur bonne porte.", at: "#examples" },
-    { t: "Ta machine", p: "Ce bloc est un <b>Trieur</b>. Pour JuL, c'est une question <code>Choice</code> : choisir <b>une</b> option parmi plusieurs. Chaque ligne est une option, reliée à une porte.", at: "#builder .node.choice" },
-    { t: "Nomme la 1ʳᵉ option", p: "Cette ligne mène à la porte Facturation. Donne-lui un nom, par exemple <code>facturation</code>.", at: () => row(0)?.querySelector(".k"), todo: "Écris un nom dans la case « nom »", done: () => opt(0)?.key.trim(), fill: () => fillOpt(0) },
-    { t: "Décris-la : c'est le secret", p: "Je ne lis pas le nom, je lis la <b>description</b>. Mets les mots que les clients emploient : <code>paiement, facture, remboursement…</code>", at: () => row(0)?.querySelector(".d"), todo: "Écris au moins 2 mots-clés", done: () => filled(0), fill: () => fillOpt(0) },
+    { t: "Ta machine", p: "Ce bloc est un <b>Trieur</b>. Pour JuL, c'est une question <code>Choice</code> : choisir <b>une</b> option parmi plusieurs. Chaque ligne est une option, reliée à une porte. Retiens ça : je ne lis pas le nom, je lis la <b>description</b>.", at: "#builder .node.choice" },
+    { t: "Décris la 1ʳᵉ option", p: "Cette ligne mène à la porte Facturation. Écris les mots que les clients emploient pour en parler : <code>paiement, facture, remboursement…</code>", at: () => row(0)?.querySelector(".d"), todo: "Écris au moins 2 mots-clés", done: () => descOk(0), fill: () => fillOpt(0) },
+    { t: "Puis un nom, pour toi", p: "Le nom, c'est l'étiquette que ton code reçoit en réponse, par exemple <code>facturation</code>. Moi, je m'en sers à peine.", at: () => row(0)?.querySelector(".k"), todo: "Écris un nom court", done: () => filled(0), fill: () => fillOpt(0) },
     { t: "À toi pour les deux autres", p: "Même chose pour <b>Technique</b> (bugs, plantages…) et <b>Compte</b> (connexion, mot de passe…).", at: () => { const a = row(1), b = row(2); return a && b ? [a, b] : null; }, todo: "Nomme et décris les options 2 et 3", done: () => filled(1) && filled(2), fill: () => { fillOpt(1); fillOpt(2); } },
     { t: "Lance la vague !", p: "18 messages vont arriver. Pour chacun, la machine fait un <b>vrai appel</b> au modèle JuL, en quelques millisecondes.", at: "#go", todo: "Clique sur « Lancer la vague »", event: "launched" },
-    { t: "Regarde-moi travailler", p: "La bulle montre ma décision et ma <b>confiance</b>. Si je transpire avec un <b>?</b>, c'est que tes descriptions m'ont laissé hésiter.", at: "#gl", place: "center-low", event: "ended", todo: "Attends la fin de la vague…" },
+    { t: "Regarde-moi travailler", p: "La bulle montre ma décision et ma <b>confiance</b>. Si je transpire avec un <b>?</b>, j'hésite entre deux options : leurs descriptions se ressemblent trop, rends-les plus distinctes.", at: "#gl", place: "center-low", event: "ended", todo: "Attends la fin de la vague…" },
     { t: "Ton résultat", p: "Les étoiles disent combien de messages sont bien rangés. En dessous, c'est <b>l'appel API exact</b> que tu viens de construire : du vrai code de prod.", at: "#end .card", place: "right" },
-    { t: "À toi de jouer", p: "Pour 3 étoiles, regarde les ✗ dans le journal en bas à droite et ajoute les mots qui manquaient. Le niveau 2 t'apprendra la <b>Porte oui/non</b>.", at: "#ticker", last: true, enter: () => $("#end").classList.remove("on") },
+    { t: "À toi de jouer", p: "Pour 3 étoiles, regarde les ✗ dans le journal en bas à droite et ajoute les mots qui manquaient. Astuce pour la suite : une sortie peut mener à <b>un autre bloc</b> au lieu d'une porte (menu « + … »). Le niveau 2 t'apprend la <b>Porte oui/non</b> placée avant le Trieur.", at: "#ticker", last: true, enter: () => $("#end").classList.remove("on") },
   ];
   const spot = document.getElementById("spot"), card = document.getElementById("coach");
   const target = st => { const a = typeof st.at === "function" ? st.at() : document.querySelector(st.at); return a; };
@@ -347,11 +360,11 @@ const TUTO = (() => {
     card.innerHTML = `<div class="who"><div class="face">🤖</div><h4>${st.t}</h4><span class="step">${T.i + 1} / ${STEPS.length}</span></div>
       <p>${st.p}</p>${st.todo ? `<div class="todo" id="tTodo">☐ ${st.todo}</div>` : ""}
       <div class="acts"><button class="skip" id="tSkip">${st.last ? "" : "Passer le tuto"}</button>
-      ${st.fill ? `<button class="fill" id="tFill">💡 Remplis pour moi</button>` : ""}
+      ${st.fill ? `<button class="fill" id="tFill" style="visibility:hidden">💡 Remplis pour moi</button>` : ""}
       ${st.event ? "" : `<button class="nextb" id="tNext">${st.last ? "C'est parti !" : "Compris →"}</button>`}</div>
       <div class="dots">${STEPS.map((_, k) => `<i class="${k <= T.i ? "on" : ""}"></i>`).join("")}</div>`;
     card.querySelector("#tSkip").onclick = () => stop(true);
-    if (st.fill) card.querySelector("#tFill").onclick = () => st.fill();
+    if (st.fill) { const fb = card.querySelector("#tFill"); fb.onclick = () => st.fill(); const at = T.i; setTimeout(() => { if (T.i === at) fb.style.visibility = "visible"; }, 15000); }
     if (!st.event) card.querySelector("#tNext").onclick = () => go(T.i + 1);
     T.waitEvent = st.event || null;
     const tgt = target(st); const f = tgt && (Array.isArray(tgt) ? tgt[0] : tgt);

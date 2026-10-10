@@ -28,25 +28,28 @@ with sync_playwright() as p:
 
     for tag in ("intro", "portes", "machine"):
         shot(tag); pg.click("#tNext")
-    shot("nom")                                            # step 4: Suivant locked until a name is typed
+    shot("description")                                    # step 4: locked until the description is written
     locked = pg.is_disabled("#tNext")
-    pg.fill("#builder .node.choice > .sub > .row:nth-of-type(2) input.k", "facturation")
-    time.sleep(1.4)                                        # auto-advance after the todo is done
-    shot("description")
+    fill_hidden = pg.evaluate("getComputedStyle(document.querySelector('#tFill')).visibility") == "hidden"
     pg.fill("#builder .node.choice > .sub > .row:nth-of-type(2) input.d", "paiement, facture, prélèvement, remboursement, prix")
+    time.sleep(1.4)                                        # auto-advance after the todo is done
+    shot("nom")
+    pg.fill("#builder .node.choice > .sub > .row:nth-of-type(2) input.k", "facturation")
     time.sleep(1.4)
     shot("autres")
-    pg.click("#tFill")                                     # "remplis pour moi" for options 2 and 3
+    time.sleep(15.5); fill_shown = pg.is_visible("#tFill")  # "remplis pour moi" appears after 15 s
+    pg.click("#tFill")
     time.sleep(1.4)
     shot("lancer")
     pg.click("#go")
     pg.wait_for_function("document.querySelector('#coach h4').innerText.startsWith('Regarde')", timeout=120000)
     time.sleep(3); shot("vague")
     pg.wait_for_function("document.querySelector('#coach h4').innerText.startsWith('Ton')", timeout=600000)
+    wire = pg.inner_text("#wire")[-400:]
     shot("resultat"); res = pg.evaluate("window.LAST && {c: LAST.correct, t: LAST.total, s: LAST.stars}")
     pg.click("#tNext"); shot("fin"); pg.click("#tNext")
     closed = not pg.is_visible("#coach")
     pg.reload(); time.sleep(6); reopened = pg.is_visible("#coach")
     b.close()
-print(json.dumps({"steps": seen, "next_locked_until_filled": locked, "result": res, "closed": closed,
+print(json.dumps({"steps": seen, "next_locked_until_filled": locked, "fill_hidden_then_shown": [fill_hidden, fill_shown], "wire": wire, "result": res, "closed": closed,
                   "reopens_on_reload": reopened, "js_errors": errs}, ensure_ascii=False, indent=1))
