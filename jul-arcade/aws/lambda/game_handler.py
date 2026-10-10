@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import os
 import time
-from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import boto3
@@ -59,10 +58,12 @@ def reply(code: int, body: dict) -> dict:
 
 
 def warmup() -> dict:
-    t = time.perf_counter()
-    with ThreadPoolExecutor(len(MODEL_FNS)) as pool:
-        out = dict(zip(MODEL_FNS, pool.map(lambda fn: invoke(fn, {"warmup": True}), MODEL_FNS)))
-    return {"warm": True, "functions": out, "s": round(time.perf_counter() - t, 2)}
+    # Fire-and-forget: an async (InvocationType="Event") invoke returns at once, so a slow cold start
+    # (the container image loads both models in ~28 s) is not held behind API Gateway's 29 s synchronous
+    # limit, which used to time the first warmup out. We no longer wait for the models' init_s.
+    for fn in MODEL_FNS:
+        lam.invoke(FunctionName=fn, InvocationType="Event", Payload=json.dumps({"warmup": True}).encode())
+    return {"warming": True, "functions": MODEL_FNS}
 
 
 def handler(event, context=None):
