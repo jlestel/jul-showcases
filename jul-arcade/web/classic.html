@@ -145,7 +145,7 @@ function nodeEl(node, setNode, depth) {
     const th = document.createElement("div"); th.className = "row";
     const lab = document.createElement("span"); lab.style.fontSize = "12px";
     const rg = document.createElement("input"); rg.type = "range"; rg.min = 0.05; rg.max = 0.95; rg.step = 0.01; rg.value = node.threshold;
-    const upd = () => lab.textContent = `seuil ${(+node.threshold).toFixed(2)}`;
+    const upd = () => lab.textContent = `seuil ${(Number.isFinite(+node.threshold) ? +node.threshold : 0.5).toFixed(2)}`;
     rg.oninput = () => { node.threshold = +rg.value; upd(); }; upd();
     th.append(lab, rg); sub.append(th);
     const [a, b, la, lb] = node.type === "noul" ? ["yes", "no", "si oui →", "si non →"] : ["above", "below", "au-dessus →", "en dessous →"];
