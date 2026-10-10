@@ -95,6 +95,34 @@
   #again { background:var(--cream); } #next { background:linear-gradient(#5ff0bd,#2fd9a0); color:#fff !important; }
   #nogl { position:fixed; inset:0; display:none; align-items:center; justify-content:center; font-size:18px; }
   @media (prefers-reduced-motion: reduce) { * { animation:none !important; } }
+
+  /* ---------- tutorial (level 1) */
+  #spot { position:fixed; z-index:55; pointer-events:none; border-radius:16px; box-shadow:0 0 0 4px #ffd84d, 0 0 0 9999px #4a2f6b8c;
+          transition:all .25s ease; display:none; }
+  #spot.pulse { animation:spotp 1.3s ease-in-out infinite; }
+  @keyframes spotp { 50% { box-shadow:0 0 0 8px #ffd84d, 0 0 0 9999px #4a2f6b8c; } }
+  #coach { position:fixed; z-index:60; width:340px; padding:16px 16px 12px; display:none; transition:top .25s, left .25s; }
+  #coach .who { display:flex; gap:10px; align-items:center; margin-bottom:6px; }
+  #coach .face { width:40px; height:40px; border-radius:12px; background:#ffd6ec; border:3px solid var(--ink); display:grid; place-items:center; font-size:20px; }
+  #coach .step { margin-left:auto; font-size:12px; color:var(--muted); font-weight:600; }
+  #coach h4 { margin:0; font-size:18px; }
+  #coach p { margin:6px 0 10px; font-size:15px; line-height:1.4; }
+  #coach p code { background:var(--cream); border-radius:6px; padding:1px 5px; font-size:13.5px; }
+  #coach .todo { background:#fff6c7; border:2px dashed #e0b400; border-radius:12px; padding:7px 10px; font-size:14px; font-weight:600; margin-bottom:10px; }
+  #coach .todo.done { background:#dcfaef; border-color:var(--teal); }
+  #coach .acts { display:flex; gap:8px; align-items:center; }
+  #coach .acts button { font:inherit; font-weight:700; border:var(--line); border-radius:12px; padding:7px 12px; cursor:pointer; }
+  #coach .skip { background:none !important; border:none !important; color:var(--muted); font-weight:600 !important; padding:7px 4px !important; }
+  #coach .fill { background:var(--cream); }
+  #coach .nextb { margin-left:auto; background:linear-gradient(#5ff0bd,#2fd9a0); color:#fff; box-shadow:0 3px 0 var(--ink); }
+  #coach .nextb:disabled { background:#e3dcef; color:#9a8fb0; box-shadow:none; cursor:not-allowed; }
+  #coach .dots { display:flex; gap:4px; margin-top:10px; }
+  #coach .dots i { flex:1; height:5px; border-radius:3px; background:#eadff5; } #coach .dots i.on { background:var(--coral); }
+  #coach.arrow-left::before { content:""; position:absolute; left:-14px; top:28px; border:7px solid transparent; border-right-color:var(--ink); }
+  #tutoBtn { padding:8px 12px; font-weight:700; font-size:14px; cursor:pointer; }
+  .row:focus-within > .k { flex:0 0 64px; } .row > .d:focus { flex:4; }
+  #end pre { white-space:pre-wrap; word-break:break-word; }
+  .row input.need { border-color:var(--coral) !important; box-shadow:0 0 0 3px #ff5d8f44; }
 </style>
 </head>
 <body>
@@ -107,6 +135,7 @@
     <div class="chip sticker" id="h-acc">— / —</div>
     <div class="chip sticker" id="h-score">Score —</div>
     <div class="chip sticker" id="h-lat">— ms / décision</div>
+    <button id="tutoBtn" class="chip sticker" title="Revoir le tutoriel du niveau 1">? Tuto</button>
     <div class="chip sticker">0 token · 0 $</div>
     <div class="chip sticker" id="brain">…</div>
     <select id="speed" class="sticker"><option value="1">×1</option><option value="2" selected>×2</option><option value="4">×4</option></select>
@@ -135,6 +164,8 @@
   <pre id="wire"></pre>
   <div class="btns"><button id="again">↺ Rejouer</button><button id="next">Niveau suivant →</button></div>
 </div></div>
+<div id="spot"></div>
+<div id="coach" class="sticker"></div>
 <div id="nogl" class="sticker">WebGL indisponible — <a href="/classic.html">version 2D</a></div>
 
 <script>
@@ -230,7 +261,7 @@ function levelButtons() {
   const d = $("#levels"); d.innerHTML = "";
   LEVELS.forEach((l, i) => { const s = BEST[l.id] || 0;
     const b = el("button", { className: l === LV ? "on" : "", innerHTML: `${i + 1}<span class="st">${"★".repeat(s)}${"☆".repeat(3 - s)}</span>` });
-    b.onclick = () => !BUSY && pick(l); d.append(b); });
+    b.onclick = () => !BUSY && !TUTO.on && pick(l); d.append(b); });
 }
 function pick(l) {
   LV = l; MACHINE = JSON.parse(localStorage.getItem("jularcade.m." + l.id) || "null") || structuredClone(l.starter);
@@ -257,7 +288,7 @@ function endCard(res, snap) {
   $("#endstats").innerHTML = `<div>${res.correct} / ${res.total} bien rangés</div><div>score ${res.score}</div><div>${res.calls} appels JuL</div><div>${res.ms_per_call} ms / décision</div><div>0 token · 0 $</div>`;
   $("#wire").textContent = `POST /v1/systemone\n` + JSON.stringify({ state: "<le message du client>", questions: wireTree(snap) }, null, 2);
   const idx = LEVELS.indexOf(LV); $("#next").style.display = idx < LEVELS.length - 1 ? "" : "none";
-  $("#end").classList.add("on");
+  $("#end").classList.add("on"); setTimeout(() => TUTO.event("ended"), 450);
   if ((BEST[LV.id] || 0) < res.stars) { BEST[LV.id] = res.stars; localStorage.setItem("jularcade.best", JSON.stringify(BEST)); levelButtons(); }
 }
 $("#again").onclick = () => $("#end").classList.remove("on");
@@ -272,16 +303,111 @@ $("#go").onclick = async () => {
     const res = await r.json();
     if (!r.ok) { $("#err").textContent = "⚠ " + res.error; STAGE.say("Bzzt… " + res.error); return; }
     $("#h-lat").textContent = `${res.ms_per_call} ms / décision`;
-    window.LAST = res; $("#log").innerHTML = "";
+    window.LAST = res; $("#log").innerHTML = ""; TUTO.event("launched");
     await STAGE.runWave(res, snap);
     endCard(res, snap);
   } catch (e) { $("#err").textContent = "⚠ " + e; }
   finally { $("#go").disabled = false; BUSY = false; }
 };
 
+
+// ---------------------------------------------------------------- tutorial: level 1, step by step
+// Each step spotlights one element and says one thing. A step with `done` waits for the player to do it
+// (the "Suivant" button unlocks when it is true); `fill` does it for them. Hooks: TUTO.event("launched" | "ended").
+const TUTO = (() => {
+  const T = { on: false, i: 0, waitEvent: null };
+  const opt = i => MACHINE && MACHINE.options && MACHINE.options[i];
+  const filled = i => opt(i) && opt(i).key.trim() && (opt(i).description || "").trim().split(/[ ,]+/).filter(Boolean).length >= 2;
+  const SUGG = [["facturation", "paiement, facture, prélèvement, remboursement, prix"],
+                ["technique", "bug, erreur, l'appli plante, ne marche pas, page blanche"],
+                ["compte", "connexion, mot de passe, e-mail, profil, supprimer mon compte"]];
+  const fillOpt = i => { const o = opt(i); o.key = SUGG[i][0]; o.description = SUGG[i][1]; render(); };
+  const row = i => document.querySelectorAll("#builder .node.choice > .sub > .row")[i];
+  const STEPS = [
+    { t: "Salut, je suis Bip !", p: "Je trie les messages des clients de PixelPost. Mais je ne sais pas <b>où</b> les envoyer : c'est toi qui vas me construire une <b>décision</b>.", at: "#gl", place: "center" },
+    { t: "Les portes", p: "Chaque message doit finir dans la bonne porte : <b>Facturation</b>, <b>Technique</b> ou <b>Compte</b>. Voici des exemples de messages et leur bonne porte.", at: "#examples" },
+    { t: "Ta machine", p: "Ce bloc est un <b>Trieur</b>. Pour JuL, c'est une question <code>Choice</code> : choisir <b>une</b> option parmi plusieurs. Chaque ligne est une option, reliée à une porte.", at: "#builder .node.choice" },
+    { t: "Nomme la 1ʳᵉ option", p: "Cette ligne mène à la porte Facturation. Donne-lui un nom, par exemple <code>facturation</code>.", at: () => row(0)?.querySelector(".k"), todo: "Écris un nom dans la case « nom »", done: () => opt(0)?.key.trim(), fill: () => fillOpt(0) },
+    { t: "Décris-la : c'est le secret", p: "Je ne lis pas le nom, je lis la <b>description</b>. Mets les mots que les clients emploient : <code>paiement, facture, remboursement…</code>", at: () => row(0)?.querySelector(".d"), todo: "Écris au moins 2 mots-clés", done: () => filled(0), fill: () => fillOpt(0) },
+    { t: "À toi pour les deux autres", p: "Même chose pour <b>Technique</b> (bugs, plantages…) et <b>Compte</b> (connexion, mot de passe…).", at: () => { const a = row(1), b = row(2); return a && b ? [a, b] : null; }, todo: "Nomme et décris les options 2 et 3", done: () => filled(1) && filled(2), fill: () => { fillOpt(1); fillOpt(2); } },
+    { t: "Lance la vague !", p: "18 messages vont arriver. Pour chacun, la machine fait un <b>vrai appel</b> au modèle JuL, en quelques millisecondes.", at: "#go", todo: "Clique sur « Lancer la vague »", event: "launched" },
+    { t: "Regarde-moi travailler", p: "La bulle montre ma décision et ma <b>confiance</b>. Si je transpire avec un <b>?</b>, c'est que tes descriptions m'ont laissé hésiter.", at: "#gl", place: "center-low", event: "ended", todo: "Attends la fin de la vague…" },
+    { t: "Ton résultat", p: "Les étoiles disent combien de messages sont bien rangés. En dessous, c'est <b>l'appel API exact</b> que tu viens de construire : du vrai code de prod.", at: "#end .card", place: "right" },
+    { t: "À toi de jouer", p: "Pour 3 étoiles, regarde les ✗ dans le journal en bas à droite et ajoute les mots qui manquaient. Le niveau 2 t'apprendra la <b>Porte oui/non</b>.", at: "#ticker", last: true, enter: () => $("#end").classList.remove("on") },
+  ];
+  const spot = document.getElementById("spot"), card = document.getElementById("coach");
+  const target = st => { const a = typeof st.at === "function" ? st.at() : document.querySelector(st.at); return a; };
+  function rectOf(t) {
+    const els = Array.isArray(t) ? t : [t]; const rs = els.filter(Boolean).map(e => e.getBoundingClientRect());
+    if (!rs.length) return null;
+    return { left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: Math.max(...rs.map(r => r.bottom)) };
+  }
+  function draw() {
+    const st = STEPS[T.i];
+    card.innerHTML = `<div class="who"><div class="face">🤖</div><h4>${st.t}</h4><span class="step">${T.i + 1} / ${STEPS.length}</span></div>
+      <p>${st.p}</p>${st.todo ? `<div class="todo" id="tTodo">☐ ${st.todo}</div>` : ""}
+      <div class="acts"><button class="skip" id="tSkip">${st.last ? "" : "Passer le tuto"}</button>
+      ${st.fill ? `<button class="fill" id="tFill">💡 Remplis pour moi</button>` : ""}
+      ${st.event ? "" : `<button class="nextb" id="tNext">${st.last ? "C'est parti !" : "Compris →"}</button>`}</div>
+      <div class="dots">${STEPS.map((_, k) => `<i class="${k <= T.i ? "on" : ""}"></i>`).join("")}</div>`;
+    card.querySelector("#tSkip").onclick = () => stop(true);
+    if (st.fill) card.querySelector("#tFill").onclick = () => st.fill();
+    if (!st.event) card.querySelector("#tNext").onclick = () => go(T.i + 1);
+    T.waitEvent = st.event || null;
+    const tgt = target(st); const f = tgt && (Array.isArray(tgt) ? tgt[0] : tgt);
+    if (f && f.focus && f.tagName === "INPUT") setTimeout(() => f.focus(), 250);
+  }
+  function go(i) { if (i >= STEPS.length) return stop(true); T.i = i; STEPS[i].enter?.(); draw(); }
+  function loop() {
+    if (!T.on) return;
+    const st = STEPS[T.i], tgt = target(st), r = tgt && rectOf(tgt);
+    const ok = st.done ? !!st.done() : true;
+    const nb = card.querySelector("#tNext"); if (nb && st.done) nb.disabled = !ok;
+    const todo = card.querySelector("#tTodo"); if (todo && st.done) { todo.classList.toggle("done", ok); todo.textContent = (ok ? "☑ " : "☐ ") + st.todo; }
+    if (st.done && ok && !st._auto) { st._auto = true; setTimeout(() => { if (T.on && STEPS[T.i] === st && st.done()) go(T.i + 1); }, 900); }
+    if (st.done && !ok) st._auto = false;
+    const W = innerWidth, H = innerHeight, cw = 340, ch = card.offsetHeight || 220;
+    if (r && !st.place?.startsWith("center")) {
+      const pad = 6; Object.assign(spot.style, { display: "block", left: r.left - pad + "px", top: r.top - pad + "px", width: r.right - r.left + 2 * pad + "px", height: r.bottom - r.top + 2 * pad + "px" });
+      spot.classList.toggle("pulse", !!st.todo);
+      let x = r.right + 22, y = r.top; card.classList.add("arrow-left");
+      if (x + cw > W - 10) { x = Math.max(10, r.left - cw - 22); card.classList.remove("arrow-left"); }
+      if (st.at === "#go" || st.at === "#ticker") { y = r.top - ch + 40; }
+      if (st.done) { x = Math.min(r.left, W - cw - 10); y = r.bottom + 18; card.classList.remove("arrow-left"); }
+      card.style.left = x + "px"; card.style.top = Math.max(80, Math.min(y, H - ch - 12)) + "px";
+    } else {
+      spot.style.display = "none"; card.classList.remove("arrow-left");
+      card.style.left = (W + 490) / 2 - cw / 2 + "px"; card.style.top = (st.place === "center-low" ? H - ch - 24 : H * 0.32) + "px";
+    }
+    // the inputs the current step asks for
+    document.querySelectorAll("#builder input.need").forEach(e => e.classList.remove("need"));
+    if (st.done && !ok) [tgt].flat().filter(Boolean).forEach(e => (e.tagName === "INPUT" ? [e] : e.querySelectorAll("input.k, input.d")).forEach(x => !x.value.trim() && x.classList.add("need")));
+    requestAnimationFrame(loop);
+  }
+  function start() {
+    if (BUSY) return;
+    $("#end").classList.remove("on");
+    if (LV !== LEVELS[0]) pick(LEVELS[0]);
+    MACHINE = structuredClone(LEVELS[0].starter); MACHINE.options.forEach(o => o.key = ""); render();
+    $("#hint").style.display = "none";
+    T.on = true; card.style.display = "block"; STEPS.forEach(s => s._auto = false); go(0); requestAnimationFrame(loop);
+  }
+  function stop(done) {
+    T.on = false; card.style.display = "none"; spot.style.display = "none";
+    document.querySelectorAll("#builder input.need").forEach(e => e.classList.remove("need"));
+    if (done) localStorage.setItem("jularcade.tuto", "1");
+  }
+  function event(name) {
+    if (!T.on || T.waitEvent !== name) return;
+    go(T.i + 1);
+  }
+  document.getElementById("tutoBtn").onclick = start;
+  return { start, stop, event, get on() { return T.on; } };
+})();
 function boot() {
   fetch("/api/warmup").catch(() => {});   // wake the model functions while the player reads the brief
-  fetch("/api/levels").then(r => r.json()).then(d => { LEVELS = d.levels; $("#brain").textContent = d.brain.replace(" (local)", ""); pick(LEVELS[0]); });
+  fetch("/api/levels").then(r => r.json()).then(d => { LEVELS = d.levels; $("#brain").textContent = d.brain.replace(" (local)", ""); pick(LEVELS[0]);
+    if (!localStorage.getItem("jularcade.tuto")) TUTO.start(); });
 }
 window.addEventListener("stage-ready", boot);
 </script>
