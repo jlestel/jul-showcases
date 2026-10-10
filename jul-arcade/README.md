@@ -14,6 +14,19 @@ brain ready: jul-decision-e5-small (local) (19.5s) -> http://127.0.0.1:8600
 [play] avis: 13/14 ★★★ 14 calls 64.5 ms/call
 ```
 
+## Look (v2)
+
+An isometric 3D island (three.js, orthographic camera, toon shading, vendored in `web/vendor/`, no
+build step): parcels roll off the conveyor, hop from machine to machine along rails, and land in a
+portal. Each block of the player's machine is a machine on the island (Trieur = Choice, Porte
+oui/non = Noul, Jauge = Score), lit while it decides. The robot walks to the active machine, sweats
+and shows a "?" when the confidence is under 0.35, dances on a hit, and the portal throws confetti.
+The end card shows the stars, the measured numbers, and the exact `POST /v1/systemone` call the
+player built. The flat 2D version stays at `/classic`; WebGL missing → link to it.
+
+`shot3d.py <level> <prefix>` takes idle / mid-wave / end screenshots; `record.py <level> out.mp4`
+films a wave (software WebGL on the pod: the frame rate of the recording is not the game's).
+
 ## Game design (v1)
 
 - **Loop**: read the brief and 2-3 examples → build the machine → ▶ launch the wave → watch the

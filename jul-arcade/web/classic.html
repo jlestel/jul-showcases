@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>JuL Arcade · L'aiguilleur</title>
+<style>
+  :root { --bg:#fff4fb; --ink:#3d2c5c; --pink:#ff8fab; --mint:#b8f2e6; --lav:#e2d4ff; --card:#ffffff; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: "Nunito", "Comic Sans MS", system-ui, sans-serif; background: var(--bg); color: var(--ink); }
+  header { display:flex; align-items:center; gap:14px; padding:10px 18px; background: linear-gradient(90deg,#ffd6e7,#e2d4ff); }
+  header h1 { margin:0; font-size:22px; letter-spacing:.5px; }
+  header .brain { margin-left:auto; font-size:12px; background:#fff8; padding:4px 10px; border-radius:20px; }
+  #levels button { border:0; border-radius:14px; padding:6px 12px; margin-right:6px; background:#fff; cursor:pointer; font-weight:700; color:var(--ink); }
+  #levels button.on { background: var(--ink); color:#fff; }
+  #levels button .st { color:#f4a300; }
+  main { display:grid; grid-template-columns: 520px 1fr; gap:14px; padding:14px; }
+  .panel { background: var(--card); border-radius: 20px; padding: 14px; box-shadow: 0 4px 0 #e9d8f5; }
+  .brief { font-size:14px; line-height:1.4; margin:0 0 8px; }
+  .examples { font-size:12px; background:#faf6ff; border-radius:12px; padding:8px; margin-bottom:10px; }
+  .examples div { margin:3px 0; }
+  .node { border:2px dashed #d7c4f0; border-radius:16px; padding:10px; margin:6px 0; background:#fdfbff; }
+  .node .head { display:flex; gap:6px; align-items:center; margin-bottom:6px; }
+  .tag { font-weight:800; font-size:12px; padding:3px 9px; border-radius:10px; color:#fff; }
+  .tag.choice { background:#7b6cf6; } .tag.noul { background:#ff7aa2; } .tag.score { background:#2ec4b6; }
+  input[type=text], select { font: inherit; font-size:13px; border:2px solid #eadcf8; border-radius:10px; padding:5px 8px; width:100%; color:var(--ink); background:#fff; }
+  input[type=range] { width:100%; }
+  .row { display:flex; gap:6px; align-items:center; margin:4px 0; }
+  .row > .k { flex: 0 0 92px; } .row > .d { flex:1; min-width:0; }
+  .row > .dest { flex: 0 0 150px; width:150px; }
+  .mini { border:0; background:#f1e9ff; border-radius:8px; padding:3px 8px; cursor:pointer; font-size:12px; color:var(--ink); }
+  .lbl { font-size:11px; opacity:.7; margin:6px 0 2px; }
+  .sub { margin-left:14px; }
+  #go { width:100%; margin-top:10px; padding:12px; font-size:18px; font-weight:900; border:0; border-radius:16px; cursor:pointer;
+        background: linear-gradient(90deg,#ff8fab,#c77dff); color:#fff; box-shadow: 0 4px 0 #a45bd6; }
+  #go:disabled { opacity:.5; cursor:wait; }
+  #err { color:#d62828; font-size:13px; min-height:18px; margin-top:6px; }
+  details { margin-top:10px; font-size:12px; } pre { background:#2b2140; color:#e9e1ff; padding:8px; border-radius:10px; overflow:auto; max-height:200px; font-size:11px; }
+  #stage { position:relative; }
+  canvas { width:100%; height:auto; background: linear-gradient(#fff,#fff4fb); border-radius:20px; display:block; }
+  #hud { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+  #hud .chip { background:#fff; border-radius:14px; padding:6px 12px; font-weight:800; box-shadow: 0 3px 0 #eadcf8; font-size:14px; }
+  #log { margin-top:10px; font-size:12px; max-height:180px; overflow:auto; background:#fff; border-radius:14px; padding:8px; }
+  #log div { padding:2px 0; border-bottom:1px dotted #eee; }
+  .ok { color:#2a9d8f; } .ko { color:#e63946; }
+  #speed { margin-left:auto; width:auto; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🤖 JuL Arcade · <span style="font-weight:400">L'aiguilleur</span></h1>
+  <div id="levels"></div>
+  <div class="brain" id="brain">…</div>
+</header>
+<main>
+  <section class="panel">
+    <p class="brief" id="brief"></p>
+    <div class="examples" id="examples"></div>
+    <div class="lbl">Ta machine à décider (chaque bloc = un vrai appel <b>system_one</b>)</div>
+    <div id="builder"></div>
+    <button id="go">▶ Lancer la vague</button>
+    <div id="err"></div>
+    <details><summary>Voir l'appel API que tu viens de construire</summary><pre id="wire"></pre></details>
+  </section>
+  <section id="stage">
+    <canvas id="cv" width="900" height="560"></canvas>
+    <div id="hud">
+      <div class="chip" id="h-score">Score —</div>
+      <div class="chip" id="h-acc">— / —</div>
+      <div class="chip" id="h-lat">⚡ — ms / décision</div>
+      <div class="chip">🪙 0 token · 0 $</div>
+      <select id="speed" class="chip"><option value="1">vitesse ×1</option><option value="2" selected>×2</option><option value="4">×4</option></select>
+    </div>
+    <div id="log"></div>
+  </section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+let LEVELS = [], LV = null, MACHINE = null, BEST = JSON.parse(localStorage.getItem("jularcade.best") || "{}");
+
+// ---------- builder ----------
+const TYPE_NAMES = { choice: "Choice", noul: "Noul", score: "Score" };
+const blank = (type, portals) => {
+  const p = Object.keys(portals);
+  if (type === "choice") return { type, instructions: "", options: p.slice(0, Math.max(2, Math.min(p.length, 3))).map(k => ({ key: "", description: "", to: k })) };
+  if (type === "noul") return { type, instructions: "", threshold: 0.5, yes: p[0], no: p[1] || p[0] };
+  return { type, instructions: "", levels: ["", "", ""], threshold: 0.5, above: p[0], below: p[1] || p[0] };
+};
+
+function destSelect(get, set) {
+  const s = document.createElement("select"); s.className = "dest";
+  for (const [k, v] of Object.entries(LV.portals)) s.add(new Option(`${v.emoji} ${v.label}`, k));
+  for (const t of LV.tools) s.add(new Option(`➕ ${TYPE_NAMES[t]}…`, "+" + t));
+  const cur = get(); s.value = typeof cur === "string" ? cur : "+" + cur.type;
+  s.onchange = () => { const v = s.value; set(v.startsWith("+") ? blank(v.slice(1), LV.portals) : v); render(); };
+  return s;
+}
+
+function input(val, ph, on) {
+  const i = document.createElement("input"); i.type = "text"; i.value = val || ""; i.placeholder = ph;
+  i.oninput = () => { on(i.value); showWire(); }; return i;
+}
+
+function nodeEl(node, setNode, depth) {
+  const box = document.createElement("div"); box.className = "node";
+  const head = document.createElement("div"); head.className = "head";
+  const sel = document.createElement("select"); sel.style.width = "auto";
+  for (const t of LV.tools) sel.add(new Option(TYPE_NAMES[t], t)); sel.value = node.type;
+  sel.onchange = () => { setNode(blank(sel.value, LV.portals)); render(); };
+  const tag = document.createElement("span"); tag.className = "tag " + node.type; tag.textContent = TYPE_NAMES[node.type];
+  head.append(tag, sel);
+  if (depth > 0) { const x = document.createElement("button"); x.className = "mini"; x.textContent = "✕ retirer";
+    x.onclick = () => { setNode(Object.keys(LV.portals)[0]); render(); }; head.append(x); }
+  box.append(head);
+  box.append(input(node.instructions, node.type === "noul" ? "Ta question oui/non… (ex : le client est-il … ?)" :
+                   node.type === "score" ? "Ce que tu mesures… (ex : à quel point … ?)" : "Ta question… (optionnel)",
+                   v => node.instructions = v));
+  const sub = document.createElement("div"); sub.className = "sub";
+  const kid = (dest, set) => { if (typeof dest === "object") sub.append(nodeEl(dest, set, depth + 1)); };
+  if (node.type === "choice") {
+    sub.append(Object.assign(document.createElement("div"), { className: "lbl", textContent: "options : nom · critère · sortie" }));
+    node.options.forEach((o, i) => {
+      const r = document.createElement("div"); r.className = "row";
+      const k = input(o.key, "nom", v => o.key = v); k.className = "k";
+      const d = input(o.description, "décris ce qui va là", v => o.description = v); d.className = "d";
+      r.append(k, d, destSelect(() => o.to, v => o.to = v));
+      if (node.options.length > 2) { const x = document.createElement("button"); x.className = "mini"; x.textContent = "−";
+        x.onclick = () => { node.options.splice(i, 1); render(); }; r.append(x); }
+      sub.append(r); kid(o.to, v => o.to = v);
+    });
+    const add = document.createElement("button"); add.className = "mini"; add.textContent = "+ option";
+    add.onclick = () => { node.options.push({ key: "", description: "", to: Object.keys(LV.portals)[0] }); render(); };
+    sub.append(add);
+  } else {
+    if (node.type === "score") {
+      sub.append(Object.assign(document.createElement("div"), { className: "lbl", textContent: "niveaux, du plus bas au plus haut" }));
+      node.levels.forEach((l, i) => { const r = document.createElement("div"); r.className = "row";
+        r.append(input(l, `niveau ${i + 1}`, v => node.levels[i] = v));
+        if (node.levels.length > 2) { const x = document.createElement("button"); x.className = "mini"; x.textContent = "−";
+          x.onclick = () => { node.levels.splice(i, 1); render(); }; r.append(x); }
+        sub.append(r); });
+      const add = document.createElement("button"); add.className = "mini"; add.textContent = "+ niveau";
+      add.onclick = () => { node.levels.push(""); render(); }; sub.append(add);
+    }
+    const th = document.createElement("div"); th.className = "row";
+    const lab = document.createElement("span"); lab.style.fontSize = "12px";
+    const rg = document.createElement("input"); rg.type = "range"; rg.min = 0.05; rg.max = 0.95; rg.step = 0.01; rg.value = node.threshold;
+    const upd = () => lab.textContent = `seuil ${(+node.threshold).toFixed(2)}`;
+    rg.oninput = () => { node.threshold = +rg.value; upd(); }; upd();
+    th.append(lab, rg); sub.append(th);
+    const [a, b, la, lb] = node.type === "noul" ? ["yes", "no", "si oui →", "si non →"] : ["above", "below", "au-dessus →", "en dessous →"];
+    for (const [key, txt] of [[a, la], [b, lb]]) {
+      const r = document.createElement("div"); r.className = "row";
+      const l = document.createElement("span"); l.textContent = txt; l.style.cssText = "font-size:12px;flex:0 0 90px";
+      r.append(l, destSelect(() => node[key], v => node[key] = v)); sub.append(r); kid(node[key], v => node[key] = v);
+    }
+  }
+  box.append(sub); return box;
+}
+
+function render() { const b = $("#builder"); b.innerHTML = ""; b.append(nodeEl(MACHINE, v => MACHINE = v, 0)); showWire(); }
+
+function wireOf(n) {
+  if (typeof n !== "object") return null;
+  if (n.type === "choice") return { type: "choice", instructions: n.instructions, criteria: Object.fromEntries(n.options.map(o => [o.key, o.description || null])) };
+  if (n.type === "noul") return { type: "noul", instructions: n.instructions };
+  return { type: "score", instructions: n.instructions, criteria: n.levels };
+}
+function showWire() {
+  const q = wireOf(MACHINE);
+  $("#wire").textContent = `POST /v1/systemone\n` + JSON.stringify({ state: "<le message du client>", questions: { q } }, null, 2);
+}
+
+// ---------- level select ----------
+function levelButtons() {
+  const d = $("#levels"); d.innerHTML = "";
+  LEVELS.forEach((l, i) => { const b = document.createElement("button"); b.className = l === LV ? "on" : "";
+    b.innerHTML = `${i + 1} <span class="st">${"★".repeat(BEST[l.id] || 0)}${"☆".repeat(3 - (BEST[l.id] || 0))}</span>`;
+    b.onclick = () => pick(l); d.append(b); });
+}
+function pick(l) {
+  LV = l; MACHINE = JSON.parse(localStorage.getItem("jularcade.m." + l.id) || "null") || structuredClone(l.starter);
+  $("#brief").innerHTML = `<b>${l.title}</b><br>${l.brief}`;
+  $("#examples").innerHTML = "<b>Exemples :</b>" + l.examples.map(e => `<div>« ${e.text} »&nbsp;→&nbsp;${l.portals[e.portal].emoji} ${l.portals[e.portal].label}</div>`).join("");
+  levelButtons(); render(); scene.reset(); $("#log").innerHTML = "";
+}
+
+// ---------- the stage (canvas) ----------
+const cv = $("#cv"), cx = cv.getContext("2d");
+const scene = {
+  items: [], robot: { x: 450, y: 250, mood: "idle", sweat: 0, t: 0 }, popups: [], shake: {},
+  reset() { this.items = []; this.popups = []; this.robot.mood = "idle"; },
+};
+function portalPos(k) { const ks = Object.keys(LV.portals); const i = ks.indexOf(k); const w = 900 / ks.length; return { x: w * i + w / 2, y: 485 }; }
+function rr(x, y, w, h, r) { cx.beginPath(); cx.roundRect(x, y, w, h, r); }
+function drawRobot(r, t) {
+  const bob = Math.sin(t / 180) * 4, wob = r.mood === "unsure" ? Math.sin(t / 50) * 6 : 0;
+  cx.save(); cx.translate(r.x + wob, r.y + bob);
+  cx.fillStyle = "#cfc2ff"; rr(-4, -78, 8, 18, 4); cx.fill(); cx.fillStyle = "#ff8fab"; cx.beginPath(); cx.arc(0, -82, 7, 0, 7); cx.fill();
+  cx.fillStyle = "#fff"; cx.strokeStyle = "#3d2c5c"; cx.lineWidth = 4; rr(-52, -62, 104, 84, 28); cx.fill(); cx.stroke();
+  cx.fillStyle = "#3d2c5c"; rr(-38, -48, 76, 50, 18); cx.fill();
+  cx.fillStyle = "#b8f2e6";
+  if (r.mood === "happy") { cx.lineWidth = 5; cx.strokeStyle = "#b8f2e6"; for (const s of [-1, 1]) { cx.beginPath(); cx.arc(16 * s, -18, 8, Math.PI * 1.1, Math.PI * 1.9); cx.stroke(); } }
+  else if (r.mood === "sad") { cx.font = "22px sans-serif"; cx.textAlign = "center"; cx.fillText("x  x", 0, -14); }
+  else { const blink = (t % 3200) < 120 ? 2 : 10; for (const s of [-1, 1]) { rr(16 * s - 6, -28, 12, blink, 5); cx.fill(); } }
+  cx.fillStyle = "#ffb3c6"; for (const s of [-1, 1]) { cx.beginPath(); cx.ellipse(30 * s, -6, 7, 4, 0, 0, 7); cx.fill(); }
+  if (r.mood === "unsure") { cx.fillStyle = "#8ecae6"; cx.beginPath(); cx.ellipse(48, -50 + (t / 8) % 20, 5, 8, 0, 0, 7); cx.fill();
+    cx.fillStyle = "#3d2c5c"; cx.font = "bold 22px sans-serif"; cx.fillText("?", 60, -62); }
+  cx.fillStyle = "#fff"; cx.strokeStyle = "#3d2c5c"; rr(-30, 22, 60, 26, 10); cx.fill(); cx.stroke();
+  cx.restore();
+}
+function draw(t) {
+  cx.clearRect(0, 0, 900, 560);
+  // conveyor
+  cx.fillStyle = "#efe6ff"; rr(20, 70, 860, 34, 17); cx.fill();
+  cx.fillStyle = "#e0d2fb"; for (let x = 30 + (t / 20) % 40; x < 880; x += 40) { rr(x, 82, 18, 10, 5); cx.fill(); }
+  cx.fillStyle = "#3d2c5c"; cx.font = "bold 13px sans-serif"; cx.textAlign = "left"; cx.fillText("📨 arrivées", 26, 60);
+  if (!LV) return;
+  // portals
+  for (const [k, p] of Object.entries(LV.portals)) {
+    const { x, y } = portalPos(k), sh = scene.shake[k] > t ? Math.sin(t / 25) * 6 : 0;
+    cx.save(); cx.translate(x + sh, y);
+    cx.fillStyle = p.color; rr(-70, -40, 140, 90, 26); cx.fill();
+    cx.fillStyle = "#fff8"; rr(-56, -28, 112, 52, 18); cx.fill();
+    cx.font = "30px sans-serif"; cx.textAlign = "center"; cx.fillText(p.emoji, 0, 8);
+    cx.fillStyle = "#3d2c5c"; cx.font = "bold 14px sans-serif"; cx.fillText(p.label, 0, 42);
+    cx.restore();
+  }
+  drawRobot(scene.robot, t);
+  // items
+  for (const it of scene.items) {
+    cx.save(); cx.translate(it.x, it.y); cx.globalAlpha = it.alpha ?? 1;
+    cx.fillStyle = it.state === "ko" ? "#ffd6d9" : it.state === "ok" ? "#d8f5ec" : "#fff";
+    cx.strokeStyle = "#3d2c5c"; cx.lineWidth = 2; rr(-110, -20, 220, 40, 14); cx.fill(); cx.stroke();
+    cx.fillStyle = "#3d2c5c"; cx.font = "12px sans-serif"; cx.textAlign = "center";
+    cx.fillText((it.text.length > 34 ? it.text.slice(0, 33) + "…" : it.text), 0, 4); cx.restore();
+  }
+  // popups (decision bubbles, +1, ✗)
+  for (const p of scene.popups) {
+    const a = Math.max(0, 1 - (t - p.t0) / p.life); if (!a) continue;
+    cx.save(); cx.globalAlpha = a; cx.translate(p.x, p.y - (t - p.t0) / 40);
+    cx.font = p.big ? "bold 26px sans-serif" : "bold 13px sans-serif"; cx.textAlign = "center";
+    if (!p.big) { const w = cx.measureText(p.txt).width + 18; cx.fillStyle = "#fff"; cx.strokeStyle = "#c77dff"; cx.lineWidth = 2;
+      rr(-w / 2, -16, w, 24, 10); cx.fill(); cx.stroke(); }
+    cx.fillStyle = p.color || "#3d2c5c"; cx.fillText(p.txt, 0, 1); cx.restore();
+  }
+  scene.popups = scene.popups.filter(p => t - p.t0 < p.life);
+}
+(function loop(t) { draw(t); requestAnimationFrame(loop); })(0);
+
+const sleep = ms => new Promise(r => setTimeout(r, ms / +$("#speed").value));
+const tween = (o, to, ms) => new Promise(res => { const from = { ...o }, t0 = performance.now(), d = ms / +$("#speed").value;
+  (function step(now) { const k = Math.min(1, (now - t0) / d), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+    for (const key in to) o[key] = from[key] + (to[key] - from[key]) * e; k < 1 ? requestAnimationFrame(step) : res(); })(t0); });
+const pop = (x, y, txt, opt = {}) => scene.popups.push({ x, y, txt, t0: performance.now(), life: opt.life || 1400, ...opt });
+
+function stepLabel(s) {
+  if (s.type === "choice") return `Choice → ${s.branch} (${Math.round(s.confidence * 100)} %)`;
+  if (s.type === "noul") return `Noul ${s.value.toFixed(2)} → ${s.branch}`;
+  return `Score ${s.value.toFixed(2)} → ${s.branch}`;
+}
+
+async function animate(res) {
+  const log = $("#log"); log.innerHTML = ""; let ok = 0;
+  for (const [i, it] of res.items.entries()) {
+    const item = { text: it.text, x: -120, y: 87, state: "" }; scene.items.push(item);
+    await tween(item, { x: 450 }, 500);
+    await tween(item, { y: 150 }, 250);
+    for (const s of it.steps) {
+      const unsure = s.confidence < 0.35;
+      scene.robot.mood = unsure ? "unsure" : "idle";
+      pop(450, 130, stepLabel(s), { life: 1300 });
+      await sleep(unsure ? 900 : 450);
+    }
+    const p = portalPos(it.got);
+    scene.robot.mood = it.ok ? "happy" : "sad";
+    await tween(item, { x: p.x, y: p.y - 70 }, 450);
+    item.state = it.ok ? "ok" : "ko";
+    if (it.ok) { ok++; pop(p.x, p.y - 90, "+1 ✨", { big: true, color: "#2a9d8f" }); }
+    else { scene.shake[it.got] = performance.now() + 500;
+      pop(p.x, p.y - 90, `✗ c'était ${LV.portals[it.expected].emoji}`, { color: "#e63946" }); }
+    await tween(item, { alpha: 0 }, 350); scene.items = scene.items.filter(x => x !== item);
+    $("#h-acc").textContent = `${ok} / ${i + 1}`;
+    log.insertAdjacentHTML("afterbegin", `<div class="${it.ok ? "ok" : "ko"}">${it.ok ? "✓" : "✗"} « ${it.text} » → ${LV.portals[it.got].emoji} ${LV.portals[it.got].label}${it.ok ? "" : ` (attendu ${LV.portals[it.expected].label})`} · ${it.steps.map(stepLabel).join(" · ")}</div>`);
+  }
+  scene.popups = []; scene.robot.mood = res.stars >= 2 ? "happy" : res.stars ? "idle" : "sad";
+  $("#h-score").textContent = `Score ${res.score} ${"★".repeat(res.stars)}${"☆".repeat(3 - res.stars)}`;
+  pop(450, 395, res.stars === 3 ? "PARFAIT ★★★" : res.stars === 2 ? "Bien joué ★★" : res.stars ? "Peut mieux faire ★" : "Retente !", { big: true, life: 3000, color: "#c77dff" });
+  if ((BEST[LV.id] || 0) < res.stars) { BEST[LV.id] = res.stars; localStorage.setItem("jularcade.best", JSON.stringify(BEST)); levelButtons(); }
+}
+
+$("#go").onclick = async () => {
+  $("#err").textContent = ""; $("#go").disabled = true;
+  localStorage.setItem("jularcade.m." + LV.id, JSON.stringify(MACHINE));
+  try {
+    const r = await fetch("/api/play", { method: "POST", headers: { "Content-Type": "application/json" },
+                                         body: JSON.stringify({ level: LV.id, machine: MACHINE }) });
+    const res = await r.json();
+    if (!r.ok) { $("#err").textContent = "⚠ " + res.error; return; }
+    $("#h-lat").textContent = `⚡ ${res.ms_per_call} ms / décision · ${res.calls} appels`;
+    window.LAST = res; await animate(res);
+  } catch (e) { $("#err").textContent = "⚠ " + e; }
+  finally { $("#go").disabled = false; }
+};
+
+fetch("/api/levels").then(r => r.json()).then(d => { LEVELS = d.levels; $("#brain").textContent = "🧠 " + d.brain; pick(LEVELS[0]); });
+</script>
+</body>
+</html>

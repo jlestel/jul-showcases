@@ -4,114 +4,370 @@
       "id": "guichet",
       "title": "Niveau 1 · Le guichet",
       "brief": "Les messages des clients de PixelPost arrivent sur le tapis. Construis la décision qui envoie chacun vers la bonne équipe.",
-      "tools": ["choice"],
+      "tools": [
+        "choice"
+      ],
       "portals": {
-        "facturation": {"label": "Facturation", "emoji": "💶", "color": "#ffb703"},
-        "technique": {"label": "Technique", "emoji": "🔧", "color": "#8ecae6"},
-        "compte": {"label": "Compte", "emoji": "🔑", "color": "#c77dff"}
+        "facturation": {
+          "label": "Facturation",
+          "emoji": "💶",
+          "color": "#ffb703"
+        },
+        "technique": {
+          "label": "Technique",
+          "emoji": "🔧",
+          "color": "#8ecae6"
+        },
+        "compte": {
+          "label": "Compte",
+          "emoji": "🔑",
+          "color": "#c77dff"
+        }
       },
-      "starter": {"type": "choice", "instructions": "", "options": [
-        {"key": "a", "description": "", "to": "facturation"},
-        {"key": "b", "description": "", "to": "technique"},
-        {"key": "c", "description": "", "to": "compte"}
-      ]},
+      "starter": {
+        "type": "choice",
+        "instructions": "",
+        "options": [
+          {
+            "key": "a",
+            "description": "",
+            "to": "facturation"
+          },
+          {
+            "key": "b",
+            "description": "",
+            "to": "technique"
+          },
+          {
+            "key": "c",
+            "description": "",
+            "to": "compte"
+          }
+        ]
+      },
       "examples": [
-        {"text": "On m'a prélevé deux fois ce mois-ci, je veux être remboursé.", "portal": "facturation"},
-        {"text": "L'appli plante dès que j'ouvre l'onglet colis.", "portal": "technique"},
-        {"text": "Je n'arrive plus à me connecter, mot de passe refusé.", "portal": "compte"}
+        {
+          "text": "On m'a prélevé deux fois ce mois-ci, je veux être remboursé.",
+          "portal": "facturation"
+        },
+        {
+          "text": "L'appli plante dès que j'ouvre l'onglet colis.",
+          "portal": "technique"
+        },
+        {
+          "text": "Je n'arrive plus à me connecter, mot de passe refusé.",
+          "portal": "compte"
+        }
       ],
       "wave": [
-        {"text": "Pouvez-vous m'envoyer la facture de mars au format PDF ?", "portal": "facturation"},
-        {"text": "Je veux changer de carte bancaire pour le prochain paiement.", "portal": "facturation"},
-        {"text": "Pourquoi le prix de mon abonnement a augmenté sans prévenir ?", "portal": "facturation"},
-        {"text": "J'ai été débité alors que j'avais résilié la semaine dernière.", "portal": "facturation"},
-        {"text": "Est-ce que je peux payer en trois fois ?", "portal": "facturation"},
-        {"text": "Le code promo de bienvenue n'a pas été appliqué sur ma commande.", "portal": "facturation"},
-        {"text": "Le suivi de mon colis affiche une page blanche.", "portal": "technique"},
-        {"text": "Les notifications ne s'affichent plus depuis la mise à jour.", "portal": "technique"},
-        {"text": "Le bouton imprimer l'étiquette ne fait rien sur Chrome.", "portal": "technique"},
-        {"text": "L'application est très lente et se fige sur Android.", "portal": "technique"},
-        {"text": "La carte des points relais ne charge pas.", "portal": "technique"},
-        {"text": "J'ai un message d'erreur 500 quand je valide l'envoi.", "portal": "technique"},
-        {"text": "Comment je change l'adresse e-mail de mon compte ?", "portal": "compte"},
-        {"text": "Je voudrais supprimer définitivement mon compte et mes données.", "portal": "compte"},
-        {"text": "Je ne reçois pas le code de vérification par SMS pour me connecter.", "portal": "compte"},
-        {"text": "Quelqu'un s'est connecté à mon compte depuis un autre pays.", "portal": "compte"},
-        {"text": "Je veux ajouter mon collègue comme deuxième utilisateur du compte.", "portal": "compte"},
-        {"text": "Mon compte est bloqué après trois essais de mot de passe.", "portal": "compte"}
-      ]
+        {
+          "text": "Pouvez-vous m'envoyer la facture de mars au format PDF ?",
+          "portal": "facturation"
+        },
+        {
+          "text": "Je veux changer de carte bancaire pour le prochain paiement.",
+          "portal": "facturation"
+        },
+        {
+          "text": "Pourquoi le prix de mon abonnement a augmenté sans prévenir ?",
+          "portal": "facturation"
+        },
+        {
+          "text": "J'ai été débité alors que j'avais résilié la semaine dernière.",
+          "portal": "facturation"
+        },
+        {
+          "text": "Est-ce que je peux payer en trois fois ?",
+          "portal": "facturation"
+        },
+        {
+          "text": "Le code promo de bienvenue n'a pas été appliqué sur ma commande.",
+          "portal": "facturation"
+        },
+        {
+          "text": "Le suivi de mon colis affiche une page blanche.",
+          "portal": "technique"
+        },
+        {
+          "text": "Les notifications ne s'affichent plus depuis la mise à jour.",
+          "portal": "technique"
+        },
+        {
+          "text": "Le bouton imprimer l'étiquette ne fait rien sur Chrome.",
+          "portal": "technique"
+        },
+        {
+          "text": "L'application est très lente et se fige sur Android.",
+          "portal": "technique"
+        },
+        {
+          "text": "La carte des points relais ne charge pas.",
+          "portal": "technique"
+        },
+        {
+          "text": "J'ai un message d'erreur 500 quand je valide l'envoi.",
+          "portal": "technique"
+        },
+        {
+          "text": "Comment je change l'adresse e-mail de mon compte ?",
+          "portal": "compte"
+        },
+        {
+          "text": "Je voudrais supprimer définitivement mon compte et mes données.",
+          "portal": "compte"
+        },
+        {
+          "text": "Je ne reçois pas le code de vérification par SMS pour me connecter.",
+          "portal": "compte"
+        },
+        {
+          "text": "Quelqu'un s'est connecté à mon compte depuis un autre pays.",
+          "portal": "compte"
+        },
+        {
+          "text": "Je veux ajouter mon collègue comme deuxième utilisateur du compte.",
+          "portal": "compte"
+        },
+        {
+          "text": "Mon compte est bloqué après trois essais de mot de passe.",
+          "portal": "compte"
+        }
+      ],
+      "hint": "Les noms des options ne suffisent pas : décris ce qui va dans chaque porte, avec les mots que les clients emploient."
     },
     {
       "id": "tempete",
       "title": "Niveau 2 · La tempête",
       "brief": "Certains clients sont furieux : ils doivent aller directement chez la responsable, avant tout tri par équipe. Les autres suivent le tri habituel.",
-      "tools": ["choice", "noul"],
+      "tools": [
+        "choice",
+        "noul"
+      ],
       "portals": {
-        "responsable": {"label": "Responsable", "emoji": "🧯", "color": "#ff6b6b"},
-        "facturation": {"label": "Facturation", "emoji": "💶", "color": "#ffb703"},
-        "technique": {"label": "Technique", "emoji": "🔧", "color": "#8ecae6"},
-        "compte": {"label": "Compte", "emoji": "🔑", "color": "#c77dff"}
+        "responsable": {
+          "label": "Responsable",
+          "emoji": "🧯",
+          "color": "#ff6b6b"
+        },
+        "facturation": {
+          "label": "Facturation",
+          "emoji": "💶",
+          "color": "#ffb703"
+        },
+        "technique": {
+          "label": "Technique",
+          "emoji": "🔧",
+          "color": "#8ecae6"
+        },
+        "compte": {
+          "label": "Compte",
+          "emoji": "🔑",
+          "color": "#c77dff"
+        }
       },
-      "starter": {"type": "choice", "instructions": "", "options": [
-        {"key": "a", "description": "", "to": "facturation"},
-        {"key": "b", "description": "", "to": "technique"},
-        {"key": "c", "description": "", "to": "compte"}
-      ]},
+      "starter": {
+        "type": "choice",
+        "instructions": "",
+        "options": [
+          {
+            "key": "a",
+            "description": "",
+            "to": "facturation"
+          },
+          {
+            "key": "b",
+            "description": "",
+            "to": "technique"
+          },
+          {
+            "key": "c",
+            "description": "",
+            "to": "compte"
+          }
+        ]
+      },
       "examples": [
-        {"text": "C'EST LA TROISIÈME FOIS QUE VOUS ME FACTUREZ EN DOUBLE, C'EST DU VOL !!!", "portal": "responsable"},
-        {"text": "Bonjour, l'appli plante quand j'ouvre l'onglet colis.", "portal": "technique"},
-        {"text": "Pouvez-vous m'envoyer ma facture de février ?", "portal": "facturation"}
+        {
+          "text": "C'EST LA TROISIÈME FOIS QUE VOUS ME FACTUREZ EN DOUBLE, C'EST DU VOL !!!",
+          "portal": "responsable"
+        },
+        {
+          "text": "Bonjour, l'appli plante quand j'ouvre l'onglet colis.",
+          "portal": "technique"
+        },
+        {
+          "text": "Pouvez-vous m'envoyer ma facture de février ?",
+          "portal": "facturation"
+        }
       ],
       "wave": [
-        {"text": "Vous êtes des incapables, ça fait une semaine que votre site est en panne, j'en ai ras le bol !", "portal": "responsable"},
-        {"text": "INADMISSIBLE. Mon compte est bloqué et personne ne répond. Je vais porter plainte.", "portal": "responsable"},
-        {"text": "Je suis furieux, vous m'avez encore prélevé alors que j'ai résilié. Remboursez-moi immédiatement !", "portal": "responsable"},
-        {"text": "Service client lamentable, plus jamais je ne passerai par vous, c'est une honte.", "portal": "responsable"},
-        {"text": "Ça suffit !!! Troisième colis perdu, votre appli ment sur le suivi, je suis hors de moi.", "portal": "responsable"},
-        {"text": "Pouvez-vous m'envoyer la facture de mars au format PDF ?", "portal": "facturation"},
-        {"text": "Est-ce que je peux payer en trois fois ?", "portal": "facturation"},
-        {"text": "Je veux changer de carte bancaire pour le prochain paiement.", "portal": "facturation"},
-        {"text": "Le code promo de bienvenue n'a pas été appliqué, merci de vérifier.", "portal": "facturation"},
-        {"text": "Les notifications ne s'affichent plus depuis la mise à jour.", "portal": "technique"},
-        {"text": "Le bouton imprimer l'étiquette ne fait rien sur Chrome.", "portal": "technique"},
-        {"text": "La carte des points relais ne charge pas chez moi.", "portal": "technique"},
-        {"text": "J'ai un message d'erreur 500 quand je valide l'envoi.", "portal": "technique"},
-        {"text": "Comment je change l'adresse e-mail de mon compte ?", "portal": "compte"},
-        {"text": "Je ne reçois pas le code de vérification par SMS.", "portal": "compte"},
-        {"text": "Je voudrais ajouter un deuxième utilisateur à mon compte.", "portal": "compte"},
-        {"text": "Je voudrais supprimer mon compte, merci.", "portal": "compte"}
-      ]
+        {
+          "text": "Vous êtes des incapables, ça fait une semaine que votre site est en panne, j'en ai ras le bol !",
+          "portal": "responsable"
+        },
+        {
+          "text": "INADMISSIBLE. Mon compte est bloqué et personne ne répond. Je vais porter plainte.",
+          "portal": "responsable"
+        },
+        {
+          "text": "Je suis furieux, vous m'avez encore prélevé alors que j'ai résilié. Remboursez-moi immédiatement !",
+          "portal": "responsable"
+        },
+        {
+          "text": "Service client lamentable, plus jamais je ne passerai par vous, c'est une honte.",
+          "portal": "responsable"
+        },
+        {
+          "text": "Ça suffit !!! Troisième colis perdu, votre appli ment sur le suivi, je suis hors de moi.",
+          "portal": "responsable"
+        },
+        {
+          "text": "Pouvez-vous m'envoyer la facture de mars au format PDF ?",
+          "portal": "facturation"
+        },
+        {
+          "text": "Est-ce que je peux payer en trois fois ?",
+          "portal": "facturation"
+        },
+        {
+          "text": "Je veux changer de carte bancaire pour le prochain paiement.",
+          "portal": "facturation"
+        },
+        {
+          "text": "Le code promo de bienvenue n'a pas été appliqué, merci de vérifier.",
+          "portal": "facturation"
+        },
+        {
+          "text": "Les notifications ne s'affichent plus depuis la mise à jour.",
+          "portal": "technique"
+        },
+        {
+          "text": "Le bouton imprimer l'étiquette ne fait rien sur Chrome.",
+          "portal": "technique"
+        },
+        {
+          "text": "La carte des points relais ne charge pas chez moi.",
+          "portal": "technique"
+        },
+        {
+          "text": "J'ai un message d'erreur 500 quand je valide l'envoi.",
+          "portal": "technique"
+        },
+        {
+          "text": "Comment je change l'adresse e-mail de mon compte ?",
+          "portal": "compte"
+        },
+        {
+          "text": "Je ne reçois pas le code de vérification par SMS.",
+          "portal": "compte"
+        },
+        {
+          "text": "Je voudrais ajouter un deuxième utilisateur à mon compte.",
+          "portal": "compte"
+        },
+        {
+          "text": "Je voudrais supprimer mon compte, merci.",
+          "portal": "compte"
+        }
+      ],
+      "hint": "Mets une Porte oui/non AVANT le Trieur. Et méfie-toi du seuil : je trouve vite les gens « un peu énervés »."
     },
     {
       "id": "avis",
       "title": "Niveau 3 · Le mur des avis",
       "brief": "Les avis clients défilent. Les plus enthousiastes vont sur le Mur des fans, les mécontents à l'équipe SAV. À toi de régler le seuil.",
-      "tools": ["choice", "noul", "score"],
+      "tools": [
+        "choice",
+        "noul",
+        "score"
+      ],
       "portals": {
-        "fans": {"label": "Mur des fans", "emoji": "💖", "color": "#ff8fab"},
-        "sav": {"label": "SAV", "emoji": "🩹", "color": "#90be6d"}
+        "fans": {
+          "label": "Mur des fans",
+          "emoji": "💖",
+          "color": "#ff8fab"
+        },
+        "sav": {
+          "label": "SAV",
+          "emoji": "🩹",
+          "color": "#90be6d"
+        }
       },
-      "starter": {"type": "noul", "instructions": "", "yes": "fans", "no": "sav"},
+      "starter": {
+        "type": "noul",
+        "instructions": "",
+        "yes": "fans",
+        "no": "sav"
+      },
       "examples": [
-        {"text": "Livraison ultra rapide et colis impeccable, je recommande à 100 % !", "portal": "fans"},
-        {"text": "Colis arrivé écrasé et en retard, très déçu.", "portal": "sav"}
+        {
+          "text": "Livraison ultra rapide et colis impeccable, je recommande à 100 % !",
+          "portal": "fans"
+        },
+        {
+          "text": "Colis arrivé écrasé et en retard, très déçu.",
+          "portal": "sav"
+        }
       ],
       "wave": [
-        {"text": "Super service, l'appli est claire et le livreur adorable. Merci !", "portal": "fans"},
-        {"text": "Parfait du début à la fin, rien à redire.", "portal": "fans"},
-        {"text": "Génial, mon colis est arrivé en avance, j'adore.", "portal": "fans"},
-        {"text": "Très bonne expérience, je repasserai par PixelPost sans hésiter.", "portal": "fans"},
-        {"text": "Top ! Suivi précis et prix correct, bravo à l'équipe.", "portal": "fans"},
-        {"text": "Excellent, le point relais était à deux pas et tout s'est bien passé.", "portal": "fans"},
-        {"text": "Une merveille, je ne passe plus que par vous.", "portal": "fans"},
-        {"text": "Colis perdu et aucune réponse du service client. Nul.", "portal": "sav"},
-        {"text": "Trois jours de retard sans explication, c'est décevant.", "portal": "sav"},
-        {"text": "Le livreur n'est jamais passé alors que j'étais chez moi.", "portal": "sav"},
-        {"text": "Emballage déchiré, il manquait un article. Pas content.", "portal": "sav"},
-        {"text": "Appli buggée, impossible de suivre mon envoi. À éviter.", "portal": "sav"},
-        {"text": "Facturé deux fois et toujours pas remboursé, très mauvaise expérience.", "portal": "sav"},
-        {"text": "Horrible, mon colis est revenu à l'expéditeur sans raison.", "portal": "sav"}
-      ]
+        {
+          "text": "Super service, l'appli est claire et le livreur adorable. Merci !",
+          "portal": "fans"
+        },
+        {
+          "text": "Parfait du début à la fin, rien à redire.",
+          "portal": "fans"
+        },
+        {
+          "text": "Génial, mon colis est arrivé en avance, j'adore.",
+          "portal": "fans"
+        },
+        {
+          "text": "Très bonne expérience, je repasserai par PixelPost sans hésiter.",
+          "portal": "fans"
+        },
+        {
+          "text": "Top ! Suivi précis et prix correct, bravo à l'équipe.",
+          "portal": "fans"
+        },
+        {
+          "text": "Excellent, le point relais était à deux pas et tout s'est bien passé.",
+          "portal": "fans"
+        },
+        {
+          "text": "Une merveille, je ne passe plus que par vous.",
+          "portal": "fans"
+        },
+        {
+          "text": "Colis perdu et aucune réponse du service client. Nul.",
+          "portal": "sav"
+        },
+        {
+          "text": "Trois jours de retard sans explication, c'est décevant.",
+          "portal": "sav"
+        },
+        {
+          "text": "Le livreur n'est jamais passé alors que j'étais chez moi.",
+          "portal": "sav"
+        },
+        {
+          "text": "Emballage déchiré, il manquait un article. Pas content.",
+          "portal": "sav"
+        },
+        {
+          "text": "Appli buggée, impossible de suivre mon envoi. À éviter.",
+          "portal": "sav"
+        },
+        {
+          "text": "Facturé deux fois et toujours pas remboursé, très mauvaise expérience.",
+          "portal": "sav"
+        },
+        {
+          "text": "Horrible, mon colis est revenu à l'expéditeur sans raison.",
+          "portal": "sav"
+        }
+      ],
+      "hint": "Une Jauge ne répond pas oui ou non : elle donne une position. Tout se joue sur l'endroit où tu poses le seuil."
     }
   ]
 }
