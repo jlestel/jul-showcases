@@ -135,7 +135,7 @@
   <pre id="wire"></pre>
   <div class="btns"><button id="again">↺ Rejouer</button><button id="next">Niveau suivant →</button></div>
 </div></div>
-<div id="nogl" class="sticker">WebGL indisponible — <a href="/classic">version 2D</a></div>
+<div id="nogl" class="sticker">WebGL indisponible — <a href="/classic.html">version 2D</a></div>
 
 <script>
 // ---------------------------------------------------------------- state + builder (plain script: globals)
@@ -280,6 +280,7 @@ $("#go").onclick = async () => {
 };
 
 function boot() {
+  fetch("/api/warmup").catch(() => {});   // wake the model functions while the player reads the brief
   fetch("/api/levels").then(r => r.json()).then(d => { LEVELS = d.levels; $("#brain").textContent = d.brain.replace(" (local)", ""); pick(LEVELS[0]); });
 }
 window.addEventListener("stage-ready", boot);

@@ -1,0 +1,69 @@
+{
+  "name": "jul-decision-e5-small",
+  "repos": {
+    "onnx": "set at init by model_handler.py"
+  },
+  "backend": "onnx",
+  "formulations": [
+    {
+      "name": "one_word",
+      "template": "query: {state}",
+      "layer": 11
+    },
+    {
+      "name": "question_options",
+      "template": "query: {instructions} ({options}): {state}",
+      "layer": 10
+    }
+  ],
+  "tau": 0.01758,
+  "center": "none",
+  "one_word": [
+    11,
+    0.01937
+  ],
+  "latency_ms": "~130",
+  "quality": "dev accuracy 0.600 \u00b1 0.035 (n=200); not measured on the Jev bench",
+  "notes": "Fitted by `jul models add jul-decision-e5-small --repo usejul/jul-decision-e5-small-onnx --backend onnx` on 2026-09-28. model_handler.py points `repos` and `cross` at the package's own directories.",
+  "calibration": {
+    "layers": {
+      "one_word": 11,
+      "question_options": 10,
+      "one_word_only": 11
+    },
+    "center": "none",
+    "tau": 0.01757737087804509,
+    "tau_one_word": 0.019370575513512657,
+    "tau_task_center": 0.05319907058638091,
+    "dev_accuracy": 0.6000000000000001,
+    "dev_accuracy_stderr": 0.034641016151377546,
+    "dev_accuracy_task_center": 0.5800000000000001,
+    "dev_ece": 0.21562450639903546,
+    "dev_accuracy_by_center": {
+      "options": 0.4713,
+      "generic": 0.465,
+      "none": 0.5975
+    },
+    "dev_accuracy_by_set": {
+      "yahootopics": 0.68,
+      "empathetic": 0.3,
+      "massive": 0.68,
+      "financialphrasebank": 0.74
+    },
+    "n_dev": 200,
+    "backend": "onnx",
+    "repo": "usejul/jul-decision-e5-small-onnx",
+    "n_layers": 12,
+    "candidate_layers": [
+      5,
+      11
+    ],
+    "n_generic": 195,
+    "latency_ms_p50": 129.51139349024743,
+    "warnings": [],
+    "date": "2026-09-28",
+    "seconds": 164
+  },
+  "method": "vector",
+  "routing": null
+}

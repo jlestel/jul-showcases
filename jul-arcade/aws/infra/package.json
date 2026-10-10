@@ -1,0 +1,19 @@
+{
+  "name": "jul-arcade-infra",
+  "private": true,
+  "scripts": {
+    "build": "tsc --noEmit",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "aws-cdk": "^2",
+    "tsx": "^4",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2",
+    "constructs": "^10"
+  }
+}

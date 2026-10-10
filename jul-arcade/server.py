@@ -32,7 +32,7 @@ def public_level(l: dict) -> dict:
 
 
 STATIC = {"/": ("index.html", "text/html; charset=utf-8"), "/index.html": ("index.html", "text/html; charset=utf-8"),
-          "/classic": ("classic.html", "text/html; charset=utf-8"),
+          "/classic": ("classic.html", "text/html; charset=utf-8"), "/classic.html": ("classic.html", "text/html; charset=utf-8"),
           "/vendor/three.module.min.js": ("vendor/three.module.min.js", "text/javascript"),
           "/vendor/fredoka-latin.woff2": ("vendor/fredoka-latin.woff2", "font/woff2")}
 
@@ -54,6 +54,8 @@ class Handler(BaseHTTPRequestHandler):
         if p in STATIC:
             f, ctype = STATIC[p]
             self._send(200, (HERE / "web" / f).read_bytes(), ctype)
+        elif p == "/api/warmup":
+            self._send(200, {"warm": True, "functions": {brain.name: {"warm": True}}})
         elif p == "/api/levels":
             self._send(200, {"levels": [public_level(l) for l in LEVELS], "brain": brain.name})
         else:
