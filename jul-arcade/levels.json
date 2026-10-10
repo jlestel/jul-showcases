@@ -11,17 +11,17 @@
         "facturation": {
           "label": "Facturation",
           "emoji": "💶",
-          "color": "#ffb703"
+          "color": "#ffbe0b"
         },
         "technique": {
           "label": "Technique",
           "emoji": "🔧",
-          "color": "#8ecae6"
+          "color": "#3ec7ff"
         },
         "compte": {
           "label": "Compte",
           "emoji": "🔑",
-          "color": "#c77dff"
+          "color": "#a66bff"
         }
       },
       "starter": {
@@ -147,22 +147,22 @@
         "responsable": {
           "label": "Responsable",
           "emoji": "🧯",
-          "color": "#ff6b6b"
+          "color": "#ff5d8f"
         },
         "facturation": {
           "label": "Facturation",
           "emoji": "💶",
-          "color": "#ffb703"
+          "color": "#ffbe0b"
         },
         "technique": {
           "label": "Technique",
           "emoji": "🔧",
-          "color": "#8ecae6"
+          "color": "#3ec7ff"
         },
         "compte": {
           "label": "Compte",
           "emoji": "🔑",
-          "color": "#c77dff"
+          "color": "#a66bff"
         }
       },
       "starter": {
@@ -285,12 +285,12 @@
         "fans": {
           "label": "Mur des fans",
           "emoji": "💖",
-          "color": "#ff8fab"
+          "color": "#ff70c8"
         },
         "sav": {
           "label": "SAV",
           "emoji": "🩹",
-          "color": "#90be6d"
+          "color": "#2fd9a0"
         }
       },
       "starter": {
