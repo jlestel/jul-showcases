@@ -6,17 +6,14 @@
    "instructions": "",
    "options": [
     {
-     "key": "facturation",
      "description": "",
      "to": "facturation"
     },
     {
-     "key": "technique",
      "description": "",
      "to": "technique"
     },
     {
-     "key": "compte",
      "description": "",
      "to": "compte"
     }
@@ -27,17 +24,14 @@
    "instructions": "Quelle équipe doit traiter ce message ?",
    "options": [
     {
-     "key": "facturation",
      "description": "paiement, facture, prélèvement, prix, remboursement",
      "to": "facturation"
     },
     {
-     "key": "technique",
      "description": "bug, erreur, l'application ou le site ne marche pas",
      "to": "technique"
     },
     {
-     "key": "compte",
      "description": "connexion, mot de passe, e-mail, profil, utilisateurs du compte",
      "to": "compte"
     }
@@ -50,22 +44,18 @@
    "instructions": "",
    "options": [
     {
-     "key": "responsable",
      "description": "",
      "to": "responsable"
     },
     {
-     "key": "facturation",
      "description": "",
      "to": "facturation"
     },
     {
-     "key": "technique",
      "description": "",
      "to": "technique"
     },
     {
-     "key": "compte",
      "description": "",
      "to": "compte"
     }
@@ -81,17 +71,14 @@
     "instructions": "Quelle équipe doit traiter ce message ?",
     "options": [
      {
-      "key": "facturation",
       "description": "paiement, facture, prélèvement, prix, remboursement",
       "to": "facturation"
      },
      {
-      "key": "technique",
       "description": "bug, erreur, l'application ou le site ne marche pas",
       "to": "technique"
      },
      {
-      "key": "compte",
       "description": "connexion, mot de passe, e-mail, profil, utilisateurs du compte",
       "to": "compte"
      }
@@ -108,17 +95,14 @@
     "instructions": "Quelle équipe doit traiter ce message ?",
     "options": [
      {
-      "key": "facturation",
       "description": "paiement, facture, prélèvement, prix, remboursement",
       "to": "facturation"
      },
      {
-      "key": "technique",
       "description": "bug, erreur, l'application ou le site ne marche pas",
       "to": "technique"
      },
      {
-      "key": "compte",
       "description": "connexion, mot de passe, e-mail, profil, utilisateurs du compte",
       "to": "compte"
      }

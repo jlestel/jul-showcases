@@ -3,7 +3,7 @@
 A machine is a small tree. Each node is one typed decision, the same shape as a Jev/JuL question,
 plus where each answer goes (a portal id, or another node):
 
-    {"type": "choice", "instructions": "...", "options": [{"key": "a", "description": "...", "to": <dest>}]}
+    {"type": "choice", "instructions": "...", "options": [{"description": "...", "to": <dest>}]}  (names: option_keys)
     {"type": "noul",   "instructions": "...", "yes": <dest>, "no": <dest>, "threshold": 0.5}
     {"type": "score",  "instructions": "...", "levels": ["lowest", ..., "highest"],
                        "threshold": 0.5, "above": <dest>, "below": <dest>}
@@ -26,6 +26,21 @@ class MachineError(ValueError):
     pass
 
 
+SLUG = {"choice": "trieur", "noul": "porte", "score": "jauge"}
+
+
+def option_keys(node: dict) -> list:
+    """A Choice option is named after where it goes: the portal id, or the next block's kind.
+    Two options with the same exit get a suffix (technique, technique_2). The player never types it."""
+    seen, keys = {}, []
+    for o in node.get("options") or []:
+        to = o.get("to")
+        base = to if isinstance(to, str) else SLUG.get((to or {}).get("type"), "suite")
+        seen[base] = seen.get(base, 0) + 1
+        keys.append(base if seen[base] == 1 else f"{base}_{seen[base]}")
+    return keys
+
+
 def to_wire(node: dict) -> dict:
     """The node as a Jev/JuL HTTP question (what the player sees as 'the API call')."""
     kind = node.get("type")
@@ -34,14 +49,7 @@ def to_wire(node: dict) -> dict:
         opts = node.get("options") or []
         if len(opts) < 2:
             raise MachineError("Un Choice a besoin d'au moins 2 options.")
-        crit = {}
-        for o in opts:
-            key = (o.get("key") or "").strip()
-            if not key:
-                raise MachineError("Chaque option d'un Choice a besoin d'un nom.")
-            if key in crit:
-                raise MachineError(f"Deux options s'appellent « {key} ».")
-            crit[key] = (o.get("description") or "").strip() or None
+        crit = {k: (o.get("description") or "").strip() or None for k, o in zip(option_keys(node), opts)}
         return {"type": "choice", "instructions": instr, "criteria": crit}
     if kind == "noul":
         if not instr:
@@ -119,7 +127,7 @@ def route(brain, node, text: str, trace: list):
         ms = (time.perf_counter() - t) * 1000
         step = {"type": node["type"], "ms": round(ms, 1), "answer": ans}
         if node["type"] == "choice":
-            idx = [o["key"].strip() for o in node["options"]].index(ans["choice"])
+            idx = option_keys(node).index(ans["choice"])
             step.update(branch=ans["choice"], confidence=ans["confidence"])
             node = node["options"][idx]["to"]
         elif node["type"] == "noul":

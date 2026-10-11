@@ -30,7 +30,7 @@ with sync_playwright() as p:
     if sol["type"] == "choice":
         for i, o in enumerate(sol["options"]):
             row = pg.locator("#builder .node .sub .row").nth(i)
-            row.locator("input.k").fill(o["key"]); row.locator("input.d").fill(o["description"])
+            row.locator("input.d").fill(o["description"])
             row.locator("select.dest").select_option(o["to"] if isinstance(o["to"], str) else "+" + o["to"]["type"])
     pg.evaluate(f"MACHINE = {json.dumps(sol)}; render();")   # nested branches + thresholds
     t = time.time()

@@ -29,17 +29,14 @@
         "instructions": "",
         "options": [
           {
-            "key": "a",
             "description": "",
             "to": "facturation"
           },
           {
-            "key": "b",
             "description": "",
             "to": "technique"
           },
           {
-            "key": "c",
             "description": "",
             "to": "compte"
           }
@@ -170,17 +167,14 @@
         "instructions": "",
         "options": [
           {
-            "key": "a",
             "description": "",
             "to": "facturation"
           },
           {
-            "key": "b",
             "description": "",
             "to": "technique"
           },
           {
-            "key": "c",
             "description": "",
             "to": "compte"
           }

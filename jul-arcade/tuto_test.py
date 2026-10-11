@@ -24,7 +24,7 @@ with sync_playwright() as p:
 
     def shot(tag):
         t, n = step(); seen.append(f"{n} {t}"); time.sleep(0.4)
-        pg.screenshot(path=str(out / f"{len(seen):02d}-{tag}.png"))
+        pg.screenshot(path=str(out / f"{len(seen):02d}-{tag}.png"), timeout=90000)
 
     for tag in ("intro", "portes", "machine"):
         shot(tag); pg.click("#tNext")
@@ -32,10 +32,7 @@ with sync_playwright() as p:
     locked = pg.is_disabled("#tNext")
     fill_hidden = pg.evaluate("getComputedStyle(document.querySelector('#tFill')).visibility") == "hidden"
     pg.fill("#builder .node.choice > .sub > .row:nth-of-type(2) input.d", "paiement, facture, prélèvement, remboursement, prix")
-    time.sleep(1.4)                                        # auto-advance after the todo is done
-    shot("nom")
-    pg.fill("#builder .node.choice > .sub > .row:nth-of-type(2) input.k", "facturation")
-    time.sleep(1.4)
+    time.sleep(1.6)                                        # auto-advance after the todo is done
     shot("autres")
     time.sleep(15.5); fill_shown = pg.is_visible("#tFill")  # "remplis pour moi" appears after 15 s
     pg.click("#tFill")
